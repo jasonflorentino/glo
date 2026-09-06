@@ -57,7 +57,7 @@ fn send_req(
   let req =
     base_req
     |> request.set_header("accept", "*/*")
-    |> request.set_header("accept-encoding", "gzip")
+    |> request.set_header("accept-encoding", "identity")
     |> request.set_header("accept-language", "en-US,en;q=0.5")
     |> request.set_header("cache-control", "no-cache")
     |> request.set_header("connection", "keep-alive")
