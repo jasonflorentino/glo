@@ -22,9 +22,21 @@ pub type ApiError {
 type GetScheduleResponse =
   response.Response(String)
 
-pub fn get_schedule(client: Client) -> Result(GetScheduleResponse, String) {
-  let endpoint = "api/V1/Schedule/Journey/"
-  send_req(client, endpoint)
+type Stop =
+  String
+
+type Query =
+  List(#(String, String))
+
+pub fn get_timetable(
+  client: Client,
+  from: Stop,
+  to: String,
+  date: String,
+) -> Result(GetScheduleResponse, String) {
+  let endpoint = "/external/go/schedules/en/timetable/all"
+  let query = [#("fromStop", from), #("toStop", to), #("date", date)]
+  send_req(client, endpoint, query)
 }
 
 fn normalize_http_error(e: httpc.HttpError) -> Result(_, String) {
@@ -38,6 +50,7 @@ fn normalize_http_error(e: httpc.HttpError) -> Result(_, String) {
 fn send_req(
   client: Client,
   endpoint: String,
+  query: Query,
 ) -> Result(response.Response(String), String) {
   let assert Ok(base_req) = request.to(client.config.base <> endpoint)
 
@@ -56,6 +69,7 @@ fn send_req(
     |> request.set_header("sec-fetch-dest", "empty")
     |> request.set_header("sec-fetch-mode", "cors")
     |> request.set_header("sec-fetch-site", "same-site")
+    |> request.set_query(query)
 
   let resp_with_err = result.try_recover(httpc.send(req), normalize_http_error)
   use resp <- result.try(resp_with_err)
