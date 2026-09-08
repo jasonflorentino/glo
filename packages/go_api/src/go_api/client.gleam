@@ -71,6 +71,7 @@ fn send_req(
     |> request.set_header("sec-fetch-site", "same-site")
     |> request.set_query(query)
 
+  // TODO: Seeing InvaidUtf8Response. Update to use `send_bits`
   let resp_with_err = result.try_recover(httpc.send(req), normalize_http_error)
   use resp <- result.try(resp_with_err)
 
