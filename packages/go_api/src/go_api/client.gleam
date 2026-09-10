@@ -1,7 +1,11 @@
+import gleam/bit_array
+import gleam/http
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/result
+
+pub const metrolinx_base = "https://api.metrolinx.com"
 
 pub type Config {
   Config(base: String, api_key: String)
@@ -27,6 +31,9 @@ type Stop =
 
 type Query =
   List(#(String, String))
+
+@external(erlang, "zlib_bridge", "gunzip")
+fn gunzip(compressed: BitArray) -> Result(BitArray, String)
 
 pub fn get_timetable(
   client: Client,
@@ -57,7 +64,7 @@ fn send_req(
   let req =
     base_req
     |> request.set_header("accept", "*/*")
-    |> request.set_header("accept-encoding", "identity")
+    |> request.set_header("accept-encoding", "gzip")
     |> request.set_header("accept-language", "en-US,en;q=0.5")
     |> request.set_header("cache-control", "no-cache")
     |> request.set_header("connection", "keep-alive")
@@ -70,9 +77,11 @@ fn send_req(
     |> request.set_header("sec-fetch-mode", "cors")
     |> request.set_header("sec-fetch-site", "same-site")
     |> request.set_query(query)
+    |> request.set_method(http.Get)
+    |> request.set_body(<<>>)
 
-  // TODO: Seeing InvaidUtf8Response. Update to use `send_bits`
-  let resp_with_err = result.try_recover(httpc.send(req), normalize_http_error)
+  let resp_with_err =
+    result.try_recover(httpc.send_bits(req), normalize_http_error)
   use resp <- result.try(resp_with_err)
 
   let get_content_encoding = fn(r) {
@@ -84,14 +93,26 @@ fn send_req(
 
   case content_encoding {
     Ok("gzip") -> handle_gzip(resp)
-    Ok(_) -> Ok(resp)
+    Ok(_) -> handle_uncompressed(resp)
     Error(msg) -> Error(msg)
   }
 }
 
 fn handle_gzip(
-  res: response.Response(String),
+  res: response.Response(BitArray),
 ) -> Result(response.Response(String), String) {
-  // TODO: inflate gzip response
-  Ok(res)
+  use decompressed <- result.try(gunzip(res.body))
+  case bit_array.to_string(decompressed) {
+    Ok(text) -> Ok(response.set_body(res, text))
+    Error(_) -> Error("Failed to convert decompresed bits to string")
+  }
+}
+
+fn handle_uncompressed(
+  res: response.Response(BitArray),
+) -> Result(response.Response(String), String) {
+  case bit_array.to_string(res.body) {
+    Ok(text) -> Ok(response.set_body(res, text))
+    Error(_) -> Error("Failed to convert bits to string")
+  }
 }

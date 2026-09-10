@@ -56,8 +56,8 @@ pub fn handle_ping(_req: wisp.Request) -> wisp.Response {
 }
 
 pub fn handle_timetable(_req: wisp.Request) -> wisp.Response {
-  let client = go_trans.new(go_trans.Config("https://api.metrolinx.com", ""))
-  let result = go_trans.get_timetable(client, "UN", "WR", "2026-09-08")
+  let client = go_trans.new(go_trans.Config(go_trans.metrolinx_base, ""))
+  let result = go_trans.get_timetable(client, "UN", "WR", "2026-09-10")
 
   case result {
     Ok(api_res) -> {
