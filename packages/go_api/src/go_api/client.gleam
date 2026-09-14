@@ -20,16 +20,6 @@ pub fn new(config: Config) -> Client {
   Client(config)
 }
 
-pub type ApiError {
-  ApiError(message: String)
-}
-
-type Query =
-  List(#(String, String))
-
-@external(erlang, "zlib_bridge", "gunzip")
-fn gunzip(compressed: BitArray) -> Result(BitArray, String)
-
 pub fn get_timetable(
   client: Client,
   from: String,
@@ -45,18 +35,10 @@ pub fn get_timetable(
   }
 }
 
-fn normalize_httpc_error(e: httpc.HttpError) -> Result(a, String) {
-  case e {
-    httpc.InvalidUtf8Response -> Error("InvalidUtf8Response")
-    httpc.FailedToConnect(_, _) -> Error("FailedToConnect")
-    httpc.ResponseTimeout -> Error("ResponseTimeout")
-  }
-}
-
 fn send_req(
   client: Client,
   endpoint: String,
-  query: Query,
+  query: List(#(String, String)),
 ) -> Result(response.Response(BitArray), String) {
   let assert Ok(base_req) = request.to(client.config.base <> endpoint)
 
@@ -97,6 +79,14 @@ fn send_req(
   }
 }
 
+fn normalize_httpc_error(e: httpc.HttpError) -> Result(a, String) {
+  case e {
+    httpc.InvalidUtf8Response -> Error("InvalidUtf8Response")
+    httpc.FailedToConnect(_, _) -> Error("FailedToConnect")
+    httpc.ResponseTimeout -> Error("ResponseTimeout")
+  }
+}
+
 fn handle_gzip(
   res: response.Response(BitArray),
 ) -> Result(response.Response(BitArray), String) {
@@ -109,3 +99,6 @@ fn handle_uncompressed(
 ) -> Result(response.Response(BitArray), String) {
   Ok(res)
 }
+
+@external(erlang, "zlib_bridge", "gunzip")
+fn gunzip(compressed: BitArray) -> Result(BitArray, String)
