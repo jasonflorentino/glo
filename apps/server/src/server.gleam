@@ -1,5 +1,7 @@
 import gleam/erlang/process
-import go_api/client as go_trans
+import gleam/json
+import go_api/client as go_client
+import go_api/timetable as go_timetable
 import mist
 import wisp
 import wisp/wisp_mist
@@ -56,13 +58,13 @@ pub fn handle_ping(_req: wisp.Request) -> wisp.Response {
 }
 
 pub fn handle_timetable(_req: wisp.Request) -> wisp.Response {
-  let client = go_trans.new(go_trans.Config(go_trans.metrolinx_base, ""))
-  let result = go_trans.get_timetable(client, "UN", "WR", "2026-09-10")
+  let client = go_client.new(go_client.Config(go_client.metrolinx_base, ""))
+  let result = go_client.get_timetable(client, "UN", "WR", "2026-09-10")
 
   case result {
     Ok(api_res) -> {
       wisp.ok()
-      |> wisp.json_body(api_res.body)
+      |> wisp.json_body(json.to_string(go_timetable.to_json(api_res)))
     }
     Error(msg) -> {
       wisp.internal_server_error()

@@ -1,9 +1,10 @@
-import gleam/bit_array
 import gleam/http
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/result
+import go_api/timetable
+import go_api/util
 
 pub const metrolinx_base = "https://api.metrolinx.com"
 
@@ -23,12 +24,6 @@ pub type ApiError {
   ApiError(message: String)
 }
 
-type GetScheduleResponse =
-  response.Response(String)
-
-type Stop =
-  String
-
 type Query =
   List(#(String, String))
 
@@ -37,16 +32,20 @@ fn gunzip(compressed: BitArray) -> Result(BitArray, String)
 
 pub fn get_timetable(
   client: Client,
-  from: Stop,
+  from: String,
   to: String,
   date: String,
-) -> Result(GetScheduleResponse, String) {
+) -> Result(timetable.Timetable, String) {
   let endpoint = "/external/go/schedules/en/timetable/all"
   let query = [#("fromStop", from), #("toStop", to), #("date", date)]
-  send_req(client, endpoint, query)
+  let assert Ok(response) = send_req(client, endpoint, query)
+  case timetable.parse(response.body) {
+    Ok(timetable) -> Ok(timetable)
+    Error(errors) -> Error(util.str_from_decode_errors(errors))
+  }
 }
 
-fn normalize_http_error(e: httpc.HttpError) -> Result(_, String) {
+fn normalize_httpc_error(e: httpc.HttpError) -> Result(a, String) {
   case e {
     httpc.InvalidUtf8Response -> Error("InvalidUtf8Response")
     httpc.FailedToConnect(_, _) -> Error("FailedToConnect")
@@ -58,7 +57,7 @@ fn send_req(
   client: Client,
   endpoint: String,
   query: Query,
-) -> Result(response.Response(String), String) {
+) -> Result(response.Response(BitArray), String) {
   let assert Ok(base_req) = request.to(client.config.base <> endpoint)
 
   let req =
@@ -81,7 +80,7 @@ fn send_req(
     |> request.set_body(<<>>)
 
   let resp_with_err =
-    result.try_recover(httpc.send_bits(req), normalize_http_error)
+    result.try_recover(httpc.send_bits(req), normalize_httpc_error)
   use resp <- result.try(resp_with_err)
 
   let get_content_encoding = fn(r) {
@@ -100,19 +99,13 @@ fn send_req(
 
 fn handle_gzip(
   res: response.Response(BitArray),
-) -> Result(response.Response(String), String) {
+) -> Result(response.Response(BitArray), String) {
   use decompressed <- result.try(gunzip(res.body))
-  case bit_array.to_string(decompressed) {
-    Ok(text) -> Ok(response.set_body(res, text))
-    Error(_) -> Error("Failed to convert decompresed bits to string")
-  }
+  Ok(response.set_body(res, decompressed))
 }
 
 fn handle_uncompressed(
   res: response.Response(BitArray),
-) -> Result(response.Response(String), String) {
-  case bit_array.to_string(res.body) {
-    Ok(text) -> Ok(response.set_body(res, text))
-    Error(_) -> Error("Failed to convert bits to string")
-  }
+) -> Result(response.Response(BitArray), String) {
+  Ok(res)
 }
