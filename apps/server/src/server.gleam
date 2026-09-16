@@ -1,8 +1,10 @@
+import common/util
 import gleam/erlang/process
 import gleam/json
 import gleam/list
 import gleam/result
 import gleam/time/calendar
+import gleam/time/duration
 import gleam/time/timestamp
 import go_api/client as go_client
 import go_api/stops as go_stops
@@ -62,39 +64,6 @@ pub fn handle_ping(_req: wisp.Request) -> wisp.Response {
   |> wisp.json_body("pong")
 }
 
-fn is_yesterday(now: timestamp.Timestamp) -> Bool {
-  let #(_, time) = timestamp.to_calendar(now, calendar.utc_offset)
-  // We're still in the late-night of the day prior ET
-  time.hours < 10
-}
-
-fn is_morning(now: timestamp.Timestamp) -> Bool {
-  let #(_, time) = timestamp.to_calendar(now, calendar.utc_offset)
-  // Usually morning ET and not the day before
-  !is_yesterday(now) && time.hours < 17
-}
-
-fn get_default_date(now: timestamp.Timestamp) -> String {
-  case is_yesterday(now) {
-    True -> todo
-    False -> todo
-  }
-}
-
-fn get_default_from(now: timestamp.Timestamp) -> String {
-  case is_morning(now) {
-    True -> go_stops.to_code(go_stops.WestHarbour)
-    False -> go_stops.to_code(go_stops.UnionStation)
-  }
-}
-
-fn get_default_to(now: timestamp.Timestamp) -> String {
-  case is_morning(now) {
-    True -> go_stops.to_code(go_stops.UnionStation)
-    False -> go_stops.to_code(go_stops.WestHarbour)
-  }
-}
-
 pub fn handle_timetable(req: wisp.Request) -> wisp.Response {
   let params = wisp.get_query(req)
   let now = timestamp.system_time()
@@ -102,10 +71,13 @@ pub fn handle_timetable(req: wisp.Request) -> wisp.Response {
     params
     |> list.key_find("from")
     |> result.unwrap(or: get_default_from(now))
+  echo "from" <> from
   let to =
     params |> list.key_find("to") |> result.unwrap(or: get_default_to(now))
-  let date = params |> list.key_find("date") |> result.unwrap(or: "2026-09-15")
-
+  echo "to" <> to
+  let date =
+    params |> list.key_find("date") |> result.unwrap(or: get_default_date(now))
+  echo "date" <> date
   let client = go_client.new(go_client.Config(go_client.metrolinx_base, ""))
   let result = go_client.get_timetable(client, from, to, date)
 
@@ -118,5 +90,28 @@ pub fn handle_timetable(req: wisp.Request) -> wisp.Response {
       wisp.internal_server_error()
       |> wisp.json_body(msg)
     }
+  }
+}
+
+fn get_default_date(now: timestamp.Timestamp) -> String {
+  let d = case util.is_yesterday(now) {
+    True -> timestamp.subtract(now, duration.hours(24))
+    False -> now
+  }
+  let #(d, _) = timestamp.to_calendar(d, calendar.utc_offset)
+  util.to_date_str(d)
+}
+
+fn get_default_from(now: timestamp.Timestamp) -> String {
+  case util.is_morning(now) {
+    True -> go_stops.to_code(go_stops.WestHarbour)
+    False -> go_stops.to_code(go_stops.UnionStation)
+  }
+}
+
+fn get_default_to(now: timestamp.Timestamp) -> String {
+  case util.is_morning(now) {
+    True -> go_stops.to_code(go_stops.UnionStation)
+    False -> go_stops.to_code(go_stops.WestHarbour)
   }
 }

@@ -1,10 +1,10 @@
+import common/util
 import gleam/http
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/result
 import go_api/timetable
-import go_api/util
 
 pub const metrolinx_base = "https://api.metrolinx.com"
 
