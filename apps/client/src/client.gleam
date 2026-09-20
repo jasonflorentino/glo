@@ -11,11 +11,11 @@ import plinth/browser/element as p_element
 
 pub fn main() -> Nil {
   let model_query_error =
-    json.to_string(
-      model_to_json(Model(count: 0, error: option.Some("error reading model"))),
-    )
+    json.to_string(model_to_json(
+      Model(..model.empty_state, error: option.Some("error reading model")),
+    ))
   let model_parse_error =
-    Model(count: 0, error: option.Some("error parsing model"))
+    Model(..model.empty_state, error: option.Some("error parsing model"))
 
   let json =
     document.query_selector("#model")
@@ -25,8 +25,6 @@ pub fn main() -> Nil {
   let model =
     json.parse(json, model_decoder())
     |> result.unwrap(model_parse_error)
-
-  echo model
 
   let app = lustre.application(init, update, view.view)
   let assert Ok(_) = lustre.start(app, "#app", model)

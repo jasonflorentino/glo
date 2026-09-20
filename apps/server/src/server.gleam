@@ -1,7 +1,7 @@
 import common/model.{Model, model_to_json}
 import common/view
 import gleam/erlang/process
-import gleam/http.{Get, Post}
+import gleam/http.{Get}
 import gleam/json
 import gleam/list
 import gleam/option
@@ -65,7 +65,20 @@ pub fn app_middleware(
 }
 
 pub fn handle_root(_req: wisp.Request) -> wisp.Response {
-  let initial_state = Model(count: 1, error: option.None)
+  let result = go_trans.fetch_timetable(option.None, option.None, option.None)
+  let timetable = case result {
+    Ok(timetable) ->
+      timetable
+      |> go_timetable.to_json
+      |> json.to_string
+    Error(_) -> "{}"
+  }
+  let error = case result {
+    Ok(_) -> option.None
+    Error(e) -> option.Some(e)
+  }
+
+  let initial_state = Model(count: 1, timetable:, error:)
   let html =
     html.html([], [
       html.head([], [
