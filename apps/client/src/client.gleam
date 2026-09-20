@@ -1,14 +1,11 @@
+import common/messages.{type Message, UserDecrementedCount, UserIncrementedCount}
 import common/model.{type Model, Model, model_decoder, model_to_json}
-import gleam/int
+import common/view
 import gleam/json
 import gleam/option
 import gleam/result
 import lustre
-import lustre/attribute
 import lustre/effect.{type Effect}
-import lustre/element.{type Element}
-import lustre/element/html
-import lustre/event
 import plinth/browser/document
 import plinth/browser/element as p_element
 
@@ -31,7 +28,7 @@ pub fn main() -> Nil {
 
   echo model
 
-  let app = lustre.application(init, update, view)
+  let app = lustre.application(init, update, view.view)
   let assert Ok(_) = lustre.start(app, "#app", model)
 
   Nil
@@ -40,11 +37,6 @@ pub fn main() -> Nil {
 fn init(initial_state: Model) -> #(Model, Effect(Message)) {
   let model = initial_state
   #(model, effect.none())
-}
-
-type Message {
-  UserDecrementedCount
-  UserIncrementedCount
 }
 
 fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
@@ -58,32 +50,4 @@ fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
       effect.none(),
     )
   }
-}
-
-fn view(model: Model) -> Element(Message) {
-  html.div([], [
-    html.h1([], [html.text("Hello World!")]),
-    view_counter(model.count),
-    case model.error {
-      option.None -> element.none()
-      option.Some(error) ->
-        html.div([attribute.style("color", "red")], [html.text(error)])
-    },
-  ])
-}
-
-fn view_counter(count: Int) -> Element(Message) {
-  let root_styles = [
-    #("display", "flex"),
-    #("gap", "0.5rem"),
-    #("flex-direction", "column"),
-  ]
-  let btn_box_styles = [#("display", "flex"), #("gap", "0.5rem")]
-  html.div([attribute.styles(root_styles)], [
-    html.text("Count: " <> int.to_string(count)),
-    html.div([attribute.styles(btn_box_styles)], [
-      html.button([event.on_click(UserIncrementedCount)], [html.text("+")]),
-      html.button([event.on_click(UserDecrementedCount)], [html.text("-")]),
-    ]),
-  ])
 }
