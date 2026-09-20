@@ -10,13 +10,19 @@ pub fn view(model: Model) -> Element(Message) {
   html.div([], [
     html.h1([], [html.text("Hello World!")]),
     counter.component(model.count),
-    html.pre([attribute.style("white-space", "pre-wrap")], [
-      html.text(model.timetable),
-    ]),
+    html.pre(
+      [
+        attribute.class("text-red-500"),
+        attribute.style("white-space", "pre-wrap"),
+      ],
+      [
+        html.text(model.timetable),
+      ],
+    ),
     case model.error {
       option.None -> element.none()
       option.Some(error) ->
-        html.div([attribute.style("color", "red")], [html.text(error)])
+        html.div([attribute.class("text-red-400")], [html.text(error)])
     },
   ])
 }

@@ -2,22 +2,30 @@
 
 set -euo pipefail
 
+export ERL_FLAGS="+B d"
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-throw() {
-	echo "Failed"; 
-	exit 1;
+cleanup() {
+	echo
+	echo "Cleaning up..."
+	kill "$CLIENT_PID" 2>/dev/null || true
 }
 
-echo Running dev
+trap cleanup EXIT SIGINT SIGTERM
+
+echo "Running dev..."
 echo
-echo Building client
+echo "Starting client..."
 echo
-"$ROOT/apps/client/build.sh" || throw
+(
+	cd "$ROOT/apps/client"
+	gleam run -m lustre/dev start 2>&1 | sed 's/^/[client] /'
+) &
+CLIENT_PID=$!
 echo
-echo Starting server
+echo "Starting server..."
 echo
-(cd "$ROOT/apps/server" && gleam run) || throw
-echo
-echo Bye bye
+cd "$ROOT/apps/server" 
+gleam run 2>&1 | sed 's/^/[server] /'
 
