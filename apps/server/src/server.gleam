@@ -1,5 +1,6 @@
 import common/model.{Model, model_to_json}
 import common/util
+import common/view
 import gleam/erlang/process
 import gleam/http.{Get, Post}
 import gleam/json
@@ -69,9 +70,7 @@ pub fn app_middleware(
 }
 
 pub fn handle_root(_req: wisp.Request) -> wisp.Response {
-  let initial_state =
-    Model(count: 1, error: option.None) |> model_to_json |> json.to_string
-
+  let initial_state = Model(count: 1, error: option.None)
   let html =
     html.html([], [
       html.head([], [
@@ -82,10 +81,14 @@ pub fn handle_root(_req: wisp.Request) -> wisp.Response {
         ),
         html.script(
           [attribute.type_("application/json"), attribute.id("model")],
-          initial_state,
+          initial_state
+            |> model_to_json
+            |> json.to_string,
         ),
       ]),
-      html.body([], [html.div([attribute.id("app")], [])]),
+      html.body([], [
+        html.div([attribute.id("app")], [view.view(initial_state)]),
+      ]),
     ])
 
   html
