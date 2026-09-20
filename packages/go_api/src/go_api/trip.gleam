@@ -8,7 +8,7 @@ pub type Trip {
     duration_minutes: Int,
     // A list of actual legs of the journey but since we're only interested in
     // direct train trips this list always contains the one rail leg that matches
-    // the requested departure and destination.
+    // the requested departure and destination:
     // lines: List(Line),
 
     // 8601 utc datetime
@@ -18,7 +18,7 @@ pub type Trip {
     transfers: Int,
     // 0 BUS
     // 1 RAIL
-    // 2 MIXED
+    // 2 ALL 
     transit_type: Int,
   )
 }
@@ -68,4 +68,10 @@ pub fn to_json(trip: Trip) -> json.Json {
     #("transfers", json.int(transfers)),
     #("transit_type", json.int(transit_type)),
   ])
+}
+
+const rail = 1
+
+pub fn is_rail(t: Trip) -> Bool {
+  t.transit_type == rail
 }
