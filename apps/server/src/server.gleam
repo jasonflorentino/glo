@@ -1,8 +1,10 @@
+import common/model.{Model, model_to_json}
 import common/util
 import gleam/erlang/process
 import gleam/http.{Get, Post}
 import gleam/json
 import gleam/list
+import gleam/option
 import gleam/result
 import gleam/time/calendar
 import gleam/time/duration
@@ -67,6 +69,9 @@ pub fn app_middleware(
 }
 
 pub fn handle_root(_req: wisp.Request) -> wisp.Response {
+  let initial_state =
+    Model(count: 1, error: option.None) |> model_to_json |> json.to_string
+
   let html =
     html.html([], [
       html.head([], [
@@ -74,6 +79,10 @@ pub fn handle_root(_req: wisp.Request) -> wisp.Response {
         html.script(
           [attribute.type_("module"), attribute.src("/static/client.js")],
           "",
+        ),
+        html.script(
+          [attribute.type_("application/json"), attribute.id("model")],
+          initial_state,
         ),
       ]),
       html.body([], [html.div([attribute.id("app")], [])]),
