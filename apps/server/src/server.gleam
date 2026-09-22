@@ -4,7 +4,7 @@ import gleam/erlang/process
 import gleam/http.{Get}
 import gleam/json
 import gleam/list
-import gleam/option
+import gleam/option.{None, Some}
 import gleam/result
 import go_api/timetable as go_timetable
 import lustre/attribute
@@ -67,11 +67,8 @@ pub fn app_middleware(
 pub fn handle_root(_req: wisp.Request) -> wisp.Response {
   let result = go_trans.fetch_timetable(option.None, option.None, option.None)
   let timetable = case result {
-    Ok(timetable) ->
-      timetable
-      |> go_timetable.to_json
-      |> json.to_string
-    Error(_) -> "{}"
+    Ok(timetable) -> Some(timetable)
+    Error(_) -> None
   }
   let error = case result {
     Ok(_) -> option.None

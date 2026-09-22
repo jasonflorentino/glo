@@ -14,28 +14,29 @@ pub type Timetable {
   )
 }
 
+pub fn decoder() -> decode.Decoder(Timetable) {
+  use arrival_display <- decode.field("arrivalDisplay", decode.string)
+  use arrival_stop_id <- decode.field("arrivalStopId", decode.string)
+  use date <- decode.field("date", decode.string)
+  use departure_display <- decode.field("departureDisplay", decode.string)
+  use departure_stop_id <- decode.field("departureStopId", decode.string)
+  use service_name <- decode.field("serviceName", decode.string)
+  use trips <- decode.field("trips", decode.list(trip.decoder()))
+  decode.success(Timetable(
+    arrival_display:,
+    arrival_stop_id:,
+    date:,
+    departure_display:,
+    departure_stop_id:,
+    service_name:,
+    trips:,
+  ))
+}
+
 pub fn parse(data: BitArray) -> Result(Timetable, List(decode.DecodeError)) {
-  let timetable_decoder = {
-    use arrival_display <- decode.field("arrivalDisplay", decode.string)
-    use arrival_stop_id <- decode.field("arrivalStopId", decode.string)
-    use date <- decode.field("date", decode.string)
-    use departure_display <- decode.field("departureDisplay", decode.string)
-    use departure_stop_id <- decode.field("departureStopId", decode.string)
-    use service_name <- decode.field("serviceName", decode.string)
-    use trips <- decode.field("trips", decode.list(trip.decoder()))
-    decode.success(Timetable(
-      arrival_display:,
-      arrival_stop_id:,
-      date:,
-      departure_display:,
-      departure_stop_id:,
-      service_name:,
-      trips:,
-    ))
-  }
   let assert Ok(raw_dynamic) =
     json.parse_bits(from: data, using: decode.dynamic)
-  decode.run(raw_dynamic, timetable_decoder)
+  decode.run(raw_dynamic, decoder())
 }
 
 pub fn to_json(timetable: Timetable) -> json.Json {

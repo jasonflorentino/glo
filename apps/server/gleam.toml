@@ -15,8 +15,9 @@ version = "1.0.0"
 [dependencies]
 client_sdk = { path = "../../packages/client_sdk" }
 common = { path = "../../packages/common" }
-gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 go_api = { path = "../../packages/go_api" }
+
+gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 wisp = ">= 2.2.2 and < 3.0.0"
 mist = ">= 6.0.3 and < 7.0.0"
 gleam_erlang = ">= 1.3.0 and < 2.0.0"
