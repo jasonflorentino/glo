@@ -1,4 +1,6 @@
-import common/messages.{type Message, UserDecrementedCount, UserIncrementedCount}
+import client_sdk/messages.{
+  type Message, UserDecrementedCount, UserIncrementedCount,
+}
 import gleam/int
 import lustre/attribute
 import lustre/element.{type Element}

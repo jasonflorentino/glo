@@ -1,10 +1,12 @@
-import common/components/counter
-import common/messages.{type Message}
-import common/model.{type Model}
+import client_sdk/components/counter
+import client_sdk/messages.{type Message}
+import client_sdk/model.{type Model}
 import gleam/option
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
+
+//     html.div([], []),
 
 pub fn view(model: Model) -> Element(Message) {
   html.div([], [

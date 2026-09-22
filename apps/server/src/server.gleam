@@ -1,5 +1,5 @@
-import common/model.{Model, model_to_json}
-import common/view
+import client_sdk/model.{Model, model_to_json}
+import client_sdk/view
 import gleam/erlang/process
 import gleam/http.{Get}
 import gleam/json

@@ -1,6 +1,8 @@
-import common/messages.{type Message, UserDecrementedCount, UserIncrementedCount}
-import common/model.{type Model, Model, model_decoder, model_to_json}
-import common/view
+import client_sdk/messages.{
+  type Message, UserDecrementedCount, UserIncrementedCount,
+}
+import client_sdk/model.{type Model, Model, model_decoder, model_to_json}
+import client_sdk/view
 import gleam/json
 import gleam/option
 import gleam/result

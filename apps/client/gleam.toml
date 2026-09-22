@@ -3,6 +3,7 @@ version = "1.0.0"
 target = "javascript"
 
 [dependencies]
+client_sdk = { path = "../../packages/client_sdk" }
 common = { path = "../../packages/common" }
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 lustre = ">= 5.7.1 and < 6.0.0"
