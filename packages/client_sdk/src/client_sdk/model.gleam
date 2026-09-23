@@ -36,7 +36,7 @@ pub fn model_decoder() -> decode.Decoder(Model) {
   use count <- decode.field("count", decode.int)
   use timetable <- decode.field(
     "timetable",
-    decode.optional(timetable.decoder()),
+    decode.optional(timetable.decoder_json()),
   )
   use error <- decode.field("error", decode.optional(decode.string))
   decode.success(Model(count:, timetable:, error:))

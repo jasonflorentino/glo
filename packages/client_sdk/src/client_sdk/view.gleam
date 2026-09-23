@@ -1,21 +1,21 @@
 import client_sdk/components/counter
 import client_sdk/messages.{type Message}
 import client_sdk/model.{type Model}
+import gleam/int
 import gleam/json
 import gleam/list
-import gleam/option.{None, Some}
-import gleam/result
+import gleam/option.{type Option, None, Some}
 import go_api/timetable
+import go_api/trip
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
-
-//     html.div([], []),
 
 pub fn view(model: Model) -> Element(Message) {
   html.div([], [
     html.h1([], [html.text("Hello World!")]),
     counter.component(model.count),
+    html.div([], timetable_view(model.timetable)),
     html.pre(
       [
         attribute.class("text-red-500"),
@@ -36,6 +36,28 @@ pub fn view(model: Model) -> Element(Message) {
   ])
 }
 
-fn trip_view(trip: String) -> Element(Message) {
-  html.div([], [])
+fn timetable_view(
+  timetable: Option(timetable.Timetable),
+) -> List(Element(Message)) {
+  case timetable {
+    Some(timetable) -> list.map(timetable.trips, trip_view)
+    None -> [element.none()]
+  }
+}
+
+fn trip_view(trip: trip.Trip) -> Element(Message) {
+  html.div([], [
+    html.div([], [
+      html.div([], [html.text("DEPARTS")]),
+      html.div([], [html.text(trip.departure_time_display)]),
+    ]),
+    html.div([], [
+      html.div([], [html.text("TRAVELS")]),
+      html.div([], [html.text(int.to_string(trip.duration_minutes))]),
+    ]),
+    html.div([], [
+      html.div([], [html.text("ARRIVES")]),
+      html.div([], [html.text(trip.arrival_time_display)]),
+    ]),
+  ])
 }

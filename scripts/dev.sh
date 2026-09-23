@@ -20,6 +20,7 @@ echo "Starting client..."
 echo
 (
 	cd "$ROOT/apps/client"
+	./build.sh | sed 's/^/[client] /'
 	gleam run -m lustre/dev start 2>&1 | sed 's/^/[client] /'
 ) &
 CLIENT_PID=$!

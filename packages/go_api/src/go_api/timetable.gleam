@@ -14,14 +14,35 @@ pub type Timetable {
   )
 }
 
-pub fn decoder() -> decode.Decoder(Timetable) {
+/// For decoding Go Transit's response bytes 
+pub fn decoder_go() -> decode.Decoder(Timetable) {
   use arrival_display <- decode.field("arrivalDisplay", decode.string)
   use arrival_stop_id <- decode.field("arrivalStopId", decode.string)
   use date <- decode.field("date", decode.string)
   use departure_display <- decode.field("departureDisplay", decode.string)
   use departure_stop_id <- decode.field("departureStopId", decode.string)
   use service_name <- decode.field("serviceName", decode.string)
-  use trips <- decode.field("trips", decode.list(trip.decoder()))
+  use trips <- decode.field("trips", decode.list(trip.decoder_go()))
+  decode.success(Timetable(
+    arrival_display:,
+    arrival_stop_id:,
+    date:,
+    departure_display:,
+    departure_stop_id:,
+    service_name:,
+    trips:,
+  ))
+}
+
+/// For decoding our own JSON
+pub fn decoder_json() -> decode.Decoder(Timetable) {
+  use arrival_display <- decode.field("arrival_display", decode.string)
+  use arrival_stop_id <- decode.field("arrival_stop_id", decode.string)
+  use date <- decode.field("date", decode.string)
+  use departure_display <- decode.field("departure_display", decode.string)
+  use departure_stop_id <- decode.field("departure_stop_id", decode.string)
+  use service_name <- decode.field("service_name", decode.string)
+  use trips <- decode.field("trips", decode.list(trip.decoder_json()))
   decode.success(Timetable(
     arrival_display:,
     arrival_stop_id:,
@@ -36,7 +57,7 @@ pub fn decoder() -> decode.Decoder(Timetable) {
 pub fn parse(data: BitArray) -> Result(Timetable, List(decode.DecodeError)) {
   let assert Ok(raw_dynamic) =
     json.parse_bits(from: data, using: decode.dynamic)
-  decode.run(raw_dynamic, decoder())
+  decode.run(raw_dynamic, decoder_go())
 }
 
 pub fn to_json(timetable: Timetable) -> json.Json {

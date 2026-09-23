@@ -23,7 +23,8 @@ pub type Trip {
   )
 }
 
-pub fn decoder() -> decode.Decoder(Trip) {
+/// For decoding Go api response bytes
+pub fn decoder_go() -> decode.Decoder(Trip) {
   use arrival_time_display <- decode.field("arrivalTimeDisplay", decode.string)
   use departure_time_display <- decode.field(
     "departureTimeDisplay",
@@ -35,6 +36,34 @@ pub fn decoder() -> decode.Decoder(Trip) {
   use service_name <- decode.field("serviceName", decode.string)
   use transfers <- decode.field("transfers", decode.int)
   use transit_type <- decode.field("transitType", decode.int)
+  decode.success(Trip(
+    arrival_time_display:,
+    departure_time_display:,
+    duration_minutes:,
+    order_time:,
+    service_code:,
+    service_name:,
+    transfers:,
+    transit_type:,
+  ))
+}
+
+/// For decoding our own JSON
+pub fn decoder_json() -> decode.Decoder(Trip) {
+  use arrival_time_display <- decode.field(
+    "arrival_time_display",
+    decode.string,
+  )
+  use departure_time_display <- decode.field(
+    "departure_time_display",
+    decode.string,
+  )
+  use duration_minutes <- decode.field("duration_minutes", decode.int)
+  use order_time <- decode.field("order_time", decode.string)
+  use service_code <- decode.field("service_code", decode.string)
+  use service_name <- decode.field("service_name", decode.string)
+  use transfers <- decode.field("transfers", decode.int)
+  use transit_type <- decode.field("transit_type", decode.int)
   decode.success(Trip(
     arrival_time_display:,
     departure_time_display:,

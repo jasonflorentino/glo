@@ -25,8 +25,7 @@ pub fn main() -> Nil {
     |> result.unwrap(model_query_error)
 
   let model =
-    json.parse(json, model_decoder())
-    |> result.unwrap(model_parse_error)
+    json.parse(json, model_decoder()) |> result.unwrap(model_parse_error)
 
   let app = lustre.application(init, update, view.view)
   let assert Ok(_) = lustre.start(app, "#app", model)
