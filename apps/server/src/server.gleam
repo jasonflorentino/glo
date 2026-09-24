@@ -75,7 +75,7 @@ pub fn handle_root(_req: wisp.Request) -> wisp.Response {
     Error(e) -> option.Some(e)
   }
 
-  let initial_state = Model(count: 1, timetable:, error:)
+  let initial_state = Model(timetable:, error:)
   let html =
     html.html([], [
       html.head([], [

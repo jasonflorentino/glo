@@ -1,4 +1,3 @@
-import client_sdk/components/counter
 import client_sdk/messages.{type Message, UserPressedFetch}
 import client_sdk/model.{type Model}
 import gleam/int
@@ -15,7 +14,6 @@ import lustre/event
 pub fn view(model: Model) -> Element(Message) {
   html.div([], [
     html.h1([], [html.text("Hello World!")]),
-    counter.component(model.count),
     html.div([], [
       html.button([event.on_click(UserPressedFetch)], [
         html.text("Fetch timetable"),

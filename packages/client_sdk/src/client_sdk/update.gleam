@@ -1,6 +1,5 @@
 import client_sdk/messages.{
-  type Message, FetchTimetableError, ServerReturnedTimetable,
-  UserDecrementedCount, UserIncrementedCount, UserPressedFetch,
+  type Message, FetchTimetableError, ServerReturnedTimetable, UserPressedFetch,
 }
 import client_sdk/model.{type Model, Model}
 import gleam/option.{Some}
@@ -10,14 +9,6 @@ import rsvp
 
 pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
   case message {
-    UserDecrementedCount -> #(
-      Model(..model, count: model.count - 1),
-      effect.none(),
-    )
-    UserIncrementedCount -> #(
-      Model(..model, count: model.count + 1),
-      effect.none(),
-    )
     UserPressedFetch -> #(model, fetch_timetable())
     ServerReturnedTimetable(timetable) -> #(
       Model(..model, timetable: Some(timetable)),
