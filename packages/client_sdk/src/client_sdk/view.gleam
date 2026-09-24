@@ -59,7 +59,7 @@ fn timetable_view(
 }
 
 fn trip_view(trip: trip.Trip) -> Element(Message) {
-  html.div([attribute.class("flex flex-between")], [
+  html.div([attribute.class("flex justify-between mt-1 pb-1 border-b")], [
     html.div([attribute.class("flex flex-col")], [
       html.div([], [html.text("DEPARTS")]),
       html.div([], [html.text(trip.departure_time_display)]),
