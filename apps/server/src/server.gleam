@@ -77,8 +77,17 @@ pub fn handle_root(_req: wisp.Request) -> wisp.Response {
 
   let initial_state = Model(timetable:, error:)
   let html =
-    html.html([], [
+    html.html([attribute.lang("en")], [
       html.head([], [
+        html.meta([attribute.charset("UTF-8")]),
+        html.meta([
+          attribute.name("viewport"),
+          attribute.content("width=device-width, initial-scale=1"),
+        ]),
+        html.meta([
+          attribute.name("description"),
+          attribute.content("See GO Train schedules quickly and easily"),
+        ]),
         html.title([], "App"),
         html.link([
           attribute.rel("stylesheet"),
@@ -95,9 +104,16 @@ pub fn handle_root(_req: wisp.Request) -> wisp.Response {
             |> json.to_string,
         ),
       ]),
-      html.body([], [
-        html.div([attribute.id("app")], [view.view(initial_state)]),
-      ]),
+      html.body(
+        [
+          attribute.class(
+            "bg-stone-900 text-green-200 selection:bg-green-300 selection:text-green-900",
+          ),
+        ],
+        [
+          html.div([attribute.id("app")], [view.view(initial_state)]),
+        ],
+      ),
     ])
 
   html

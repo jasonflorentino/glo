@@ -13,13 +13,30 @@ import lustre/event
 
 pub fn view(model: Model) -> Element(Message) {
   html.div([], [
-    html.h1([], [html.text("Hello World!")]),
-    html.div([], [
-      html.button([event.on_click(UserPressedFetch)], [
-        html.text("Fetch timetable"),
+    html.header(
+      [attribute.class("p-2 sm:p-4 border-b-2 border-green-200 bg-green-600")],
+      [
+        html.h1(
+          [
+            attribute.class(
+              "text-2xl pt-1 text-green-100 font-bold sm:text-3xl md:text-4xl",
+            ),
+          ],
+          [html.text("🚆 Glo Train Schedule")],
+        ),
+      ],
+    ),
+    html.main([attribute.class("p-4 min-h-svh")], [
+      html.div([], [
+        html.button([event.on_click(UserPressedFetch)], [
+          html.text("Fetch timetable"),
+        ]),
       ]),
+      html.section(
+        [attribute.class("mt-4 sm:mt-6 md:mt-8")],
+        timetable_view(model.timetable),
+      ),
     ]),
-    html.div([], timetable_view(model.timetable)),
     html.pre(
       [
         attribute.class("text-red-500"),
@@ -46,10 +63,26 @@ fn timetable_view(
   case timetable {
     Some(timetable) -> {
       [
-        html.div([], [
-          html.text(timetable.date),
+        html.div([attribute.class("flex gap-2 items-baseline")], [
+          html.h2(
+            [
+              attribute.class(
+                "text-xl text-green-300 font-bold sm:text-2xl md:text-3xl",
+              ),
+            ],
+            [
+              html.text("Trips"),
+            ],
+          ),
+          html.span([attribute.class("ml-auto md:ml-0")], [
+            html.text(timetable.service_name),
+            html.text(" – "),
+            html.text(timetable.date),
+          ]),
         ]),
-        ..list.map(timetable.trips, trip_view)
+        html.div([attribute.class("mt-2")], [
+          html.ol([], list.map(timetable.trips, trip_view)),
+        ]),
       ]
     }
     None -> [element.none()]
@@ -57,18 +90,62 @@ fn timetable_view(
 }
 
 fn trip_view(trip: trip.Trip) -> Element(Message) {
-  html.div([attribute.class("flex justify-between mt-1 pb-1 border-b")], [
-    html.div([attribute.class("flex flex-col")], [
-      html.div([], [html.text("DEPARTS")]),
-      html.div([], [html.text(trip.departure_time_display)]),
-    ]),
-    html.div([attribute.class("flex flex-col")], [
-      html.div([], [html.text("TRAVELS")]),
-      html.div([], [html.text(int.to_string(trip.duration_minutes))]),
-    ]),
-    html.div([attribute.class("flex flex-col")], [
-      html.div([], [html.text("ARRIVES")]),
-      html.div([], [html.text(trip.arrival_time_display)]),
-    ]),
-  ])
+  html.li(
+    [
+      attribute.class(
+        "border-t border-green-100 grid grid-cols-7 sm:grid-cols-3 gap-2 pt-1 pb-5 departed",
+      ),
+    ],
+    [
+      html.div([attribute.class("flex flex-col col-span-3 sm:col-span-1")], [
+        html.span(
+          [
+            attribute.class(
+              "text-xs md:text-sm text-blue-200 uppercase opacity-80 font-medium",
+            ),
+          ],
+          [html.text("DEPARTS")],
+        ),
+        html.span(
+          [attribute.class("text-xl font-medium sm:text-2xl md:text-3xl")],
+          [html.text(trip.departure_time_display)],
+        ),
+      ]),
+      html.div([attribute.class("flex flex-col col-span-3 sm:col-span-1")], [
+        html.span(
+          [
+            attribute.class(
+              "text-xs md:text-sm text-green-300 uppercase opacity-80 font-medium",
+            ),
+          ],
+          [html.text("TRAVELS")],
+        ),
+        html.span(
+          [attribute.class("text-xl font-medium sm:text-2xl md:text-3xl")],
+          [html.text(int.to_string(trip.duration_minutes))],
+        ),
+      ]),
+      html.div(
+        [
+          attribute.class(
+            "flex flex-col col-span-2 sm:col-span-1 items-end sm:items-start",
+          ),
+        ],
+        [
+          html.span(
+            [
+              attribute.class(
+                "text-xs md:text-sm text-red-200 uppercase opacity-80 font-medium",
+              ),
+            ],
+            [html.text("ARRIVES")],
+          ),
+          html.span(
+            [attribute.class("text-xl font-medium sm:text-2xl md:text-3xl")],
+            [html.text(trip.arrival_time_display)],
+          ),
+        ],
+      ),
+    ],
+  )
 }

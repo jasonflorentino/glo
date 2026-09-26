@@ -2,3 +2,4 @@
 
 @source "../../../packages/common/src/**/*.gleam";
 @source "../../../packages/client_sdk/src/**/*.gleam";
+@source "../../server/src/**/*.gleam";
