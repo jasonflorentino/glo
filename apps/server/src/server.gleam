@@ -6,6 +6,7 @@ import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
+import go_api/destinations as go_destinations
 import go_api/timetable as go_timetable
 import lustre/attribute
 import lustre/element
@@ -43,6 +44,7 @@ pub fn handle_request(
     Get, [] -> handle_root(req)
     Get, ["ping"] -> handle_ping(req)
 
+    Get, ["api", "destinations"] -> handle_destinations(req)
     Get, ["api", "timetable"] -> handle_timetable(req)
 
     _, _ -> wisp.not_found()
@@ -130,6 +132,30 @@ fn option_from_result(r: Result(a, _)) -> option.Option(a) {
   r
   |> result.map(option.Some)
   |> result.unwrap(or: option.None)
+}
+
+pub fn handle_destinations(req: wisp.Request) -> wisp.Response {
+  let params = wisp.get_query(req)
+  let to = params |> list.key_find("to") |> option_from_result
+  let date = params |> list.key_find("date") |> option_from_result
+  let result = go_trans.fetch_destinations(to, date)
+
+  case result {
+    Ok(api_res) -> {
+      let json_res =
+        api_res
+        // Train trips only!
+        |> go_destinations.train_only
+        |> go_destinations.to_json
+        |> json.to_string
+      wisp.ok()
+      |> wisp.json_body(json_res)
+    }
+    Error(msg) -> {
+      wisp.internal_server_error()
+      |> wisp.json_body(msg)
+    }
+  }
 }
 
 pub fn handle_timetable(req: wisp.Request) -> wisp.Response {

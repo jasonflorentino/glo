@@ -4,8 +4,21 @@ import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp
 import go_api/client as go_client
+import go_api/destinations as go_destinations
 import go_api/stops as go_stops
 import go_api/timetable as go_timetable
+
+pub fn fetch_destinations(
+  to: Option(String),
+  date: Option(String),
+) -> Result(go_destinations.Destinations, String) {
+  let now = timestamp.system_time()
+  let to = to |> option.unwrap(or: get_default_to(now))
+  let date = date |> option.unwrap(or: get_default_date(now))
+
+  let client = go_client.new(go_client.Config(go_client.metrolinx_base, ""))
+  go_client.get_destinations(client, to, date)
+}
 
 pub fn fetch_timetable(
   from: Option(String),
