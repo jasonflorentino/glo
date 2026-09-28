@@ -4,6 +4,7 @@ import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/result
+import go_api/destinations
 import go_api/timetable
 
 pub const metrolinx_base = "https://api.metrolinx.com"
@@ -18,6 +19,23 @@ pub type Client {
 
 pub fn new(config: Config) -> Client {
   Client(config)
+}
+
+pub fn get_destinations(
+  client: Client,
+  to: String,
+  date: String,
+) -> Result(destinations.Destinations, String) {
+  let endpoint = "/external/go/schedules/stops/" <> to <> "/destinations"
+  let query = [#("Date", date)]
+  let assert Ok(response) = send_req(client, endpoint, query)
+  echo "response start ----"
+  echo response
+  echo "response end ----"
+  case destinations.parse(response.body) {
+    Ok(destinations) -> Ok(destinations)
+    Error(errors) -> Error(util.str_from_decode_errors(errors))
+  }
 }
 
 pub fn get_timetable(

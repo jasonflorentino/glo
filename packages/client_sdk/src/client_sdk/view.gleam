@@ -32,6 +32,7 @@ pub fn view(model: Model) -> Element(Message) {
           html.text("Fetch timetable"),
         ]),
       ]),
+      form_view(),
       html.section(
         [attribute.class("mt-4 sm:mt-6 md:mt-8")],
         timetable_view(model.timetable),
@@ -54,6 +55,70 @@ pub fn view(model: Model) -> Element(Message) {
       option.Some(error) ->
         html.div([attribute.class("text-red-400")], [html.text(error)])
     },
+  ])
+}
+
+fn form_view() -> Element(Message) {
+  html.form([attribute.class("flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6")], [
+    html.div([attribute.class("flex gap-4 flex-col sm:flex-row")], [
+      html.div([attribute.class("flex items-center w-full")], [
+        html.label(
+          [
+            attribute.for("fromStop"),
+            attribute.class("block min-w-12 md:text-lg"),
+          ],
+          [html.text("From")],
+        ),
+        html.select(
+          [
+            attribute.id("fromStop"),
+            attribute.name("from"),
+            attribute.class(
+              "p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500",
+            ),
+          ],
+          [
+            html.option([attribute.value("AC")], "Action GO"),
+            html.option(
+              [attribute.value("UN"), attribute.selected(True)],
+              "Union Station GO",
+            ),
+            html.option([attribute.value("WR")], "West Harbour GO"),
+          ],
+        ),
+      ]),
+      html.div([attribute.class("flex items-center w-full")], [
+        html.label(
+          [
+            attribute.for("toStop"),
+            attribute.class("block min-w-12 md:text-lg drop-shadow-md"),
+          ],
+          [html.text("To")],
+        ),
+        html.select(
+          [
+            attribute.id("toStop"),
+            attribute.name("to"),
+            attribute.class(
+              "p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500",
+            ),
+          ],
+          [
+            html.option([attribute.value("AC")], "Action GO"),
+            html.option(
+              [
+                attribute.value("UN"),
+              ],
+              "Union Station GO",
+            ),
+            html.option(
+              [attribute.value("WR"), attribute.selected(True)],
+              "West Harbour GO",
+            ),
+          ],
+        ),
+      ]),
+    ]),
   ])
 }
 
