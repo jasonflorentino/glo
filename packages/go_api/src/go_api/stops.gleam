@@ -1,3 +1,6 @@
+import gleam/list
+import gleam/option.{type Option, None, Some}
+
 pub type Stop {
   Acton
   Agincourt
@@ -222,4 +225,138 @@ pub fn to_name(stop: Stop) -> String {
     Weston -> "Weston GO"
     Whitby -> "Whitby GO"
   }
+}
+
+pub const barrie = [
+  AllandaleWaterfront,
+  BarrieSouth,
+  Bradford,
+  EastGwillimbury,
+  Newmarket,
+  Aurora,
+  KingCity,
+  Maple,
+  Rutherford,
+  DownsviewPark,
+  UnionStation,
+]
+
+pub const kitchener = [
+  Kitchener,
+  GuelphCentral,
+  Acton,
+  Georgetown,
+  MountPleasant,
+  BramptonInnovationDistrict,
+  Bramalea,
+  Malton,
+  EtobicokeNorth,
+  Weston,
+  MountDennis,
+  Bloor,
+  UnionStation,
+]
+
+pub const lakeshore_east = [
+  DurhamCollegeOshawa,
+  Whitby,
+  Ajax,
+  Pickering,
+  RougeHill,
+  Guildwood,
+  Eglinton,
+  Scarborough,
+  Danforth,
+  UnionStation,
+]
+
+pub const lakeshore_west = [
+  NiagaraFalls,
+  StCatharines,
+  Confederation,
+  WestHarbour,
+  HamiltonGoCentre,
+  Aldershot,
+  Burlington,
+  Appleby,
+  Bronte,
+  Oakville,
+  Clarkson,
+  PortCredit,
+  LongBranch,
+  Mimico,
+  Exhibition,
+  UnionStation,
+]
+
+pub const milton = [
+  Milton,
+  Lisgar,
+  Meadowvale,
+  Streetsville,
+  Erindale,
+  Cooksville,
+  Dixie,
+  Kipling,
+  UnionStation,
+]
+
+pub const richmond_hill = [
+  Gormley,
+  RichmondHill,
+  Langstaff,
+  OldCummer,
+  Oriole,
+  UnionStation,
+]
+
+pub const stouffville = [
+  OldElm,
+  Stouffville,
+  MountJoy,
+  Markham,
+  Centennial,
+  Unionville,
+  Milliken,
+  Agincourt,
+  Kennedy,
+  UnionStation,
+]
+
+pub const lines = [
+  barrie,
+  kitchener,
+  lakeshore_east,
+  lakeshore_west,
+  milton,
+  richmond_hill,
+  stouffville,
+]
+
+fn equal(a, b: Stop) -> Bool {
+  a == b
+}
+
+pub fn line_has_stop(line: List(Stop), stop: Stop) -> Bool {
+  list.any(line, equal(_, stop))
+}
+
+/// Assumes every stop appears in exactly one line (Except Union)
+pub fn get_sister_stops(stop: Stop) -> Option(List(Stop)) {
+  case stop == UnionStation {
+    True -> {
+      lines |> list.flatten |> list.unique |> remove_stop(UnionStation) |> Some
+    }
+    False -> {
+      let line = lines |> list.find(line_has_stop(_, stop))
+      case line {
+        Ok(line) -> line |> remove_stop(stop) |> Some
+        Error(_) -> None
+      }
+    }
+  }
+}
+
+pub fn remove_stop(list: List(Stop), stop: Stop) -> List(Stop) {
+  list.filter(list, fn(s) { s != stop })
 }

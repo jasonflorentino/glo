@@ -79,6 +79,7 @@ fn form_view() -> Element(Message) {
             ),
           ],
           [
+            // TODO: Add all stops 
             html.option([attribute.value("AC")], "Action GO"),
             html.option(
               [attribute.value("UN"), attribute.selected(True)],
@@ -105,6 +106,7 @@ fn form_view() -> Element(Message) {
             ),
           ],
           [
+            // TODO: Show only sisters stops for the selected From Stop 
             html.option([attribute.value("AC")], "Action GO"),
             html.option(
               [
