@@ -1,9 +1,10 @@
 import client_sdk/messages.{type Message, UserPressedFetch}
 import client_sdk/model.{type Model}
-import gleam/int
+import common/util
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/string
 import go_api/timetable
 import go_api/trip
 import lustre/attribute
@@ -163,32 +164,12 @@ fn trip_view(trip: trip.Trip) -> Element(Message) {
     ],
     [
       html.div([attribute.class("flex flex-col col-span-3 sm:col-span-1")], [
-        html.span(
-          [
-            attribute.class(
-              "text-xs md:text-sm text-blue-200 uppercase opacity-80 font-medium",
-            ),
-          ],
-          [html.text("DEPARTS")],
-        ),
-        html.span(
-          [attribute.class("text-xl font-medium sm:text-2xl md:text-3xl")],
-          [html.text(trip.departure_time_display)],
-        ),
+        trip_heading("DEPARTS", "text-blue-200"),
+        trip_number(trip.departure_time_display),
       ]),
       html.div([attribute.class("flex flex-col col-span-3 sm:col-span-1")], [
-        html.span(
-          [
-            attribute.class(
-              "text-xs md:text-sm text-green-300 uppercase opacity-80 font-medium",
-            ),
-          ],
-          [html.text("TRAVELS")],
-        ),
-        html.span(
-          [attribute.class("text-xl font-medium sm:text-2xl md:text-3xl")],
-          [html.text(int.to_string(trip.duration_minutes))],
-        ),
+        trip_heading("TRAVELS", "text-green-300"),
+        trip_number(util.time_str_from_minutes(trip.duration_minutes)),
       ]),
       html.div(
         [
@@ -197,20 +178,28 @@ fn trip_view(trip: trip.Trip) -> Element(Message) {
           ),
         ],
         [
-          html.span(
-            [
-              attribute.class(
-                "text-xs md:text-sm text-red-200 uppercase opacity-80 font-medium",
-              ),
-            ],
-            [html.text("ARRIVES")],
-          ),
-          html.span(
-            [attribute.class("text-xl font-medium sm:text-2xl md:text-3xl")],
-            [html.text(trip.arrival_time_display)],
-          ),
+          trip_heading("ARRIVES", "text-red-200"),
+          trip_number(trip.arrival_time_display),
         ],
       ),
     ],
   )
+}
+
+fn trip_heading(text: String, color: String) -> Element(Message) {
+  html.span(
+    [
+      attribute.class(string.join(
+        ["text-xs md:text-sm uppercase opacity-80 font-medium", color],
+        " ",
+      )),
+    ],
+    [html.text(text)],
+  )
+}
+
+fn trip_number(text: String) -> Element(Message) {
+  html.span([attribute.class("text-xl font-medium sm:text-2xl md:text-3xl")], [
+    html.text(text),
+  ])
 }

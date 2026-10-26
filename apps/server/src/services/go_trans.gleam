@@ -8,6 +8,8 @@ import go_api/destinations as go_destinations
 import go_api/stops as go_stops
 import go_api/timetable as go_timetable
 
+const config = go_client.Config(go_client.metrolinx_base, "")
+
 pub fn fetch_destinations(
   to: Option(String),
   date: Option(String),
@@ -16,7 +18,7 @@ pub fn fetch_destinations(
   let to = to |> option.unwrap(or: get_default_to(now))
   let date = date |> option.unwrap(or: get_default_date(now))
 
-  let client = go_client.new(go_client.Config(go_client.metrolinx_base, ""))
+  let client = go_client.new(config)
   go_client.get_destinations(client, to, date)
 }
 
@@ -32,7 +34,7 @@ pub fn fetch_timetable(
   let to = to |> option.unwrap(or: get_default_to(now))
   let date = date |> option.unwrap(or: get_default_date(now))
 
-  let client = go_client.new(go_client.Config(go_client.metrolinx_base, ""))
+  let client = go_client.new(config)
   go_client.get_timetable(client, from, to, date)
 }
 

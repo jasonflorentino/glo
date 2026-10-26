@@ -42,3 +42,12 @@ pub fn to_date_str(date: calendar.Date) -> String {
 pub fn pad_zero(digit: Int, to desired_length: Int) -> String {
   int.to_string(digit) |> string.pad_start(desired_length, "0")
 }
+
+pub fn time_str_from_minutes(mins: Int) -> String {
+  let h = mins / 60
+  let m = mins % 60
+  case h, m {
+    0, _ -> int.to_string(m) <> "m"
+    _, _ -> int.to_string(h) <> "h" <> pad_zero(m, to: 2) <> "m"
+  }
+}
