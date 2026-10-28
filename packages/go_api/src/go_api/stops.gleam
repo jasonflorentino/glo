@@ -77,9 +77,7 @@ pub type Stop {
   Whitby
 }
 
-pub fn to_json(stop: Stop) -> json.Json {
-  json.string(to_code(stop))
-}
+pub const default_stop = WestHarbour
 
 pub fn to_code(stop: Stop) -> String {
   case stop {
@@ -157,84 +155,6 @@ pub fn to_code(stop: Stop) -> String {
   }
 }
 
-pub fn decoder() {
-  use decoded_string <- decode.then(decode.string)
-  case decoded_string {
-    "AC" -> decode.success(Acton)
-    "AG" -> decode.success(Agincourt)
-    "AJ" -> decode.success(Ajax)
-    "AL" -> decode.success(Aldershot)
-    "AD" -> decode.success(AllandaleWaterfront)
-    "AP" -> decode.success(Appleby)
-    "AU" -> decode.success(Aurora)
-    "BA" -> decode.success(BarrieSouth)
-    "BL" -> decode.success(Bloor)
-    "BD" -> decode.success(Bradford)
-    "BE" -> decode.success(Bramalea)
-    "BR" -> decode.success(BramptonInnovationDistrict)
-    "BO" -> decode.success(Bronte)
-    "BU" -> decode.success(Burlington)
-    "CE" -> decode.success(Centennial)
-    "CL" -> decode.success(Clarkson)
-    "CF" -> decode.success(Confederation)
-    "CO" -> decode.success(Cooksville)
-    "DA" -> decode.success(Danforth)
-    "DI" -> decode.success(Dixie)
-    "DW" -> decode.success(DownsviewPark)
-    "OS" -> decode.success(DurhamCollegeOshawa)
-    "EA" -> decode.success(EastGwillimbury)
-    "EG" -> decode.success(Eglinton)
-    "ER" -> decode.success(Erindale)
-    "ET" -> decode.success(EtobicokeNorth)
-    "EX" -> decode.success(Exhibition)
-    "GE" -> decode.success(Georgetown)
-    "GO" -> decode.success(Gormley)
-    "GL" -> decode.success(GuelphCentral)
-    "GU" -> decode.success(Guildwood)
-    "HA" -> decode.success(HamiltonGoCentre)
-    "KE" -> decode.success(Kennedy)
-    "KC" -> decode.success(KingCity)
-    "KP" -> decode.success(Kipling)
-    "KI" -> decode.success(Kitchener)
-    "LA" -> decode.success(Langstaff)
-    "LS" -> decode.success(Lisgar)
-    "LO" -> decode.success(LongBranch)
-    "MA" -> decode.success(Malton)
-    "MP" -> decode.success(Maple)
-    "MR" -> decode.success(Markham)
-    "ME" -> decode.success(Meadowvale)
-    "MK" -> decode.success(Milliken)
-    "ML" -> decode.success(Milton)
-    "MI" -> decode.success(Mimico)
-    "MD" -> decode.success(MountDennis)
-    "MJ" -> decode.success(MountJoy)
-    "MO" -> decode.success(MountPleasant)
-    "NE" -> decode.success(Newmarket)
-    "NI" -> decode.success(NiagaraFalls)
-    "OA" -> decode.success(Oakville)
-    "OL" -> decode.success(OldCummer)
-    "LI" -> decode.success(OldElm)
-    "OR" -> decode.success(Oriole)
-    "PA" -> decode.success(PearsonAirport)
-    "PIN" -> decode.success(Pickering)
-    "PO" -> decode.success(PortCredit)
-    "RI" -> decode.success(RichmondHill)
-    "RO" -> decode.success(RougeHill)
-    "RU" -> decode.success(Rutherford)
-    "SC" -> decode.success(Scarborough)
-    "00132" -> decode.success(SquareOneGoTerminal)
-    "SCTH" -> decode.success(StCatharines)
-    "ST" -> decode.success(Stouffville)
-    "SR" -> decode.success(Streetsville)
-    "UI" -> decode.success(Unionville)
-    "UN" -> decode.success(UnionStation)
-    "WR" -> decode.success(WestHarbour)
-    "WE" -> decode.success(Weston)
-    "WH" -> decode.success(Whitby)
-    _ -> decode.failure(WestHarbour, expected: "Stop")
-  }
-}
-
 pub fn from_string(str: String) -> Result(Stop, String) {
   case str {
     "AC" -> Ok(Acton)
@@ -309,6 +229,18 @@ pub fn from_string(str: String) -> Result(Stop, String) {
     "WE" -> Ok(Weston)
     "WH" -> Ok(Whitby)
     _ -> Error("Unknown stop")
+  }
+}
+
+pub fn to_json(stop: Stop) -> json.Json {
+  json.string(to_code(stop))
+}
+
+pub fn decoder() {
+  use decoded_string <- decode.then(decode.string)
+  case from_string(decoded_string) {
+    Ok(stop) -> decode.success(stop)
+    Error(_) -> decode.failure(default_stop, expected: "Stop")
   }
 }
 
