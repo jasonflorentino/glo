@@ -1,20 +1,41 @@
 import client_sdk/messages.{
-  type Message, FetchTimetableError, ServerReturnedTimetable, UserPressedFetch,
+  type Message, ComputerUpdatedFrom, FetchTimetableError, RuntimeError,
+  ServerReturnedTimetable, UserChangedFrom, UserPressedFetch,
 }
 import client_sdk/model.{type Model, Model}
 import gleam/option.{Some}
+import go_api/stops
 import go_api/timetable
 import lustre/effect.{type Effect}
 import rsvp
 
 pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
   case message {
+    ComputerUpdatedFrom(to_stops) -> #(
+      Model(..model, to_stop_options: to_stops),
+      effect.none(),
+    )
+    UserChangedFrom(from) -> #(model, update_from(from))
     UserPressedFetch -> #(model, fetch_timetable())
     ServerReturnedTimetable(timetable) -> #(
       Model(..model, timetable: Some(timetable)),
       effect.none(),
     )
     FetchTimetableError(msg) -> #(model, effect.none())
+    RuntimeError(msg) -> #(Model(..model, error: Some(msg)), effect.none())
+  }
+}
+
+fn update_from(from: String) -> Effect(Message) {
+  use dispatch <- effect.from
+  let from = stops.from_string(from)
+
+  case from {
+    Ok(from_stop) -> {
+      let to_stops = stops.get_sister_stops(from_stop)
+      dispatch(ComputerUpdatedFrom(to_stops))
+    }
+    Error(msg) -> dispatch(RuntimeError(msg))
   }
 }
 

@@ -13,10 +13,10 @@ import plinth/browser/element as p_element
 pub fn main() -> Nil {
   let model_query_error =
     json.to_string(model_to_json(
-      Model(..model.empty_state, error: option.Some("error reading model")),
+      Model(..model.empty_state(), error: option.Some("error reading model")),
     ))
   let model_parse_error =
-    Model(..model.empty_state, error: option.Some("error parsing model"))
+    Model(..model.empty_state(), error: option.Some("error parsing model"))
 
   let json =
     document.query_selector("#model")

@@ -1,10 +1,11 @@
-import client_sdk/messages.{type Message, UserPressedFetch}
+import client_sdk/messages.{type Message, UserChangedFrom, UserPressedFetch}
 import client_sdk/model.{type Model}
 import common/util
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
+import go_api/stops
 import go_api/timetable
 import go_api/trip
 import lustre/attribute
@@ -33,7 +34,7 @@ pub fn view(model: Model) -> Element(Message) {
           html.text("Fetch timetable"),
         ]),
       ]),
-      form_view(),
+      form_view(model),
       html.section(
         [attribute.class("mt-4 sm:mt-6 md:mt-8")],
         timetable_view(model.timetable),
@@ -59,7 +60,7 @@ pub fn view(model: Model) -> Element(Message) {
   ])
 }
 
-fn form_view() -> Element(Message) {
+fn form_view(model: Model) -> Element(Message) {
   html.form([attribute.class("flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6")], [
     html.div([attribute.class("flex gap-4 flex-col sm:flex-row")], [
       html.div([attribute.class("flex items-center w-full")], [
@@ -77,14 +78,13 @@ fn form_view() -> Element(Message) {
             attribute.class(
               "p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500",
             ),
+            attribute.value(stops.to_code(model.from_stop)),
+            event.on_change(UserChangedFrom),
           ],
           [
-            // TODO: Add all stops 
+            // TODO: Add all stops here
             html.option([attribute.value("AC")], "Action GO"),
-            html.option(
-              [attribute.value("UN"), attribute.selected(True)],
-              "Union Station GO",
-            ),
+            html.option([attribute.value("UN")], "Union Station GO"),
             html.option([attribute.value("WR")], "West Harbour GO"),
           ],
         ),
@@ -106,7 +106,7 @@ fn form_view() -> Element(Message) {
             ),
           ],
           [
-            // TODO: Show only sisters stops for the selected From Stop 
+            // TODO: Use model.to_stop_options here 
             html.option([attribute.value("AC")], "Action GO"),
             html.option(
               [

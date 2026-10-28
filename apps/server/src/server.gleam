@@ -1,4 +1,4 @@
-import client_sdk/model.{Model, model_to_json}
+import client_sdk/model.{model_to_json}
 import client_sdk/view
 import gleam/erlang/process
 import gleam/http.{Get}
@@ -77,7 +77,7 @@ pub fn handle_root(_req: wisp.Request) -> wisp.Response {
     Error(e) -> option.Some(e)
   }
 
-  let initial_state = Model(timetable:, error:)
+  let initial_state = model.empty_state()
   let html =
     html.html([attribute.lang("en")], [
       html.head([], [
