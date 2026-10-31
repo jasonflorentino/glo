@@ -11,8 +11,8 @@ import rsvp
 
 pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
   case message {
-    ComputerUpdatedFrom(to_stops) -> #(
-      Model(..model, to_stop_options: to_stops),
+    ComputerUpdatedFrom(from_stop, to_stops) -> #(
+      Model(..model, from_stop: from_stop, to_stop_options: to_stops),
       effect.none(),
     )
     UserChangedFrom(from) -> #(model, update_from(from))
@@ -21,7 +21,10 @@ pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
       Model(..model, timetable: Some(timetable)),
       effect.none(),
     )
-    FetchTimetableError(msg) -> #(model, effect.none())
+    FetchTimetableError(msg) -> #(
+      Model(..model, error: Some(msg)),
+      effect.none(),
+    )
     RuntimeError(msg) -> #(Model(..model, error: Some(msg)), effect.none())
   }
 }
@@ -33,7 +36,7 @@ fn update_from(from: String) -> Effect(Message) {
   case from {
     Ok(from_stop) -> {
       let to_stops = stops.get_sister_stops(from_stop)
-      dispatch(ComputerUpdatedFrom(to_stops))
+      dispatch(ComputerUpdatedFrom(from_stop, to_stops))
     }
     Error(msg) -> dispatch(RuntimeError(msg))
   }

@@ -79,247 +79,6 @@ pub type Stop {
 
 pub const default_stop = WestHarbour
 
-pub fn to_code(stop: Stop) -> String {
-  case stop {
-    Acton -> "AC"
-    Agincourt -> "AG"
-    Ajax -> "AJ"
-    Aldershot -> "AL"
-    AllandaleWaterfront -> "AD"
-    Appleby -> "AP"
-    Aurora -> "AU"
-    BarrieSouth -> "BA"
-    Bloor -> "BL"
-    Bradford -> "BD"
-    Bramalea -> "BE"
-    BramptonInnovationDistrict -> "BR"
-    Bronte -> "BO"
-    Burlington -> "BU"
-    Centennial -> "CE"
-    Clarkson -> "CL"
-    Confederation -> "CF"
-    Cooksville -> "CO"
-    Danforth -> "DA"
-    Dixie -> "DI"
-    DownsviewPark -> "DW"
-    DurhamCollegeOshawa -> "OS"
-    EastGwillimbury -> "EA"
-    Eglinton -> "EG"
-    Erindale -> "ER"
-    EtobicokeNorth -> "ET"
-    Exhibition -> "EX"
-    Georgetown -> "GE"
-    Gormley -> "GO"
-    GuelphCentral -> "GL"
-    Guildwood -> "GU"
-    HamiltonGoCentre -> "HA"
-    Kennedy -> "KE"
-    KingCity -> "KC"
-    Kipling -> "KP"
-    Kitchener -> "KI"
-    Langstaff -> "LA"
-    Lisgar -> "LS"
-    LongBranch -> "LO"
-    Malton -> "MA"
-    Maple -> "MP"
-    Markham -> "MR"
-    Meadowvale -> "ME"
-    Milliken -> "MK"
-    Milton -> "ML"
-    Mimico -> "MI"
-    MountDennis -> "MD"
-    MountJoy -> "MJ"
-    MountPleasant -> "MO"
-    Newmarket -> "NE"
-    NiagaraFalls -> "NI"
-    Oakville -> "OA"
-    OldCummer -> "OL"
-    OldElm -> "LI"
-    Oriole -> "OR"
-    PearsonAirport -> "PA"
-    Pickering -> "PIN"
-    PortCredit -> "PO"
-    RichmondHill -> "RI"
-    RougeHill -> "RO"
-    Rutherford -> "RU"
-    Scarborough -> "SC"
-    SquareOneGoTerminal -> "00132"
-    StCatharines -> "SCTH"
-    Stouffville -> "ST"
-    Streetsville -> "SR"
-    Unionville -> "UI"
-    UnionStation -> "UN"
-    WestHarbour -> "WR"
-    Weston -> "WE"
-    Whitby -> "WH"
-  }
-}
-
-pub fn from_string(str: String) -> Result(Stop, String) {
-  case str {
-    "AC" -> Ok(Acton)
-    "AG" -> Ok(Agincourt)
-    "AJ" -> Ok(Ajax)
-    "AL" -> Ok(Aldershot)
-    "AD" -> Ok(AllandaleWaterfront)
-    "AP" -> Ok(Appleby)
-    "AU" -> Ok(Aurora)
-    "BA" -> Ok(BarrieSouth)
-    "BL" -> Ok(Bloor)
-    "BD" -> Ok(Bradford)
-    "BE" -> Ok(Bramalea)
-    "BR" -> Ok(BramptonInnovationDistrict)
-    "BO" -> Ok(Bronte)
-    "BU" -> Ok(Burlington)
-    "CE" -> Ok(Centennial)
-    "CL" -> Ok(Clarkson)
-    "CF" -> Ok(Confederation)
-    "CO" -> Ok(Cooksville)
-    "DA" -> Ok(Danforth)
-    "DI" -> Ok(Dixie)
-    "DW" -> Ok(DownsviewPark)
-    "OS" -> Ok(DurhamCollegeOshawa)
-    "EA" -> Ok(EastGwillimbury)
-    "EG" -> Ok(Eglinton)
-    "ER" -> Ok(Erindale)
-    "ET" -> Ok(EtobicokeNorth)
-    "EX" -> Ok(Exhibition)
-    "GE" -> Ok(Georgetown)
-    "GO" -> Ok(Gormley)
-    "GL" -> Ok(GuelphCentral)
-    "GU" -> Ok(Guildwood)
-    "HA" -> Ok(HamiltonGoCentre)
-    "KE" -> Ok(Kennedy)
-    "KC" -> Ok(KingCity)
-    "KP" -> Ok(Kipling)
-    "KI" -> Ok(Kitchener)
-    "LA" -> Ok(Langstaff)
-    "LS" -> Ok(Lisgar)
-    "LO" -> Ok(LongBranch)
-    "MA" -> Ok(Malton)
-    "MP" -> Ok(Maple)
-    "MR" -> Ok(Markham)
-    "ME" -> Ok(Meadowvale)
-    "MK" -> Ok(Milliken)
-    "ML" -> Ok(Milton)
-    "MI" -> Ok(Mimico)
-    "MD" -> Ok(MountDennis)
-    "MJ" -> Ok(MountJoy)
-    "MO" -> Ok(MountPleasant)
-    "NE" -> Ok(Newmarket)
-    "NI" -> Ok(NiagaraFalls)
-    "OA" -> Ok(Oakville)
-    "OL" -> Ok(OldCummer)
-    "LI" -> Ok(OldElm)
-    "OR" -> Ok(Oriole)
-    "PA" -> Ok(PearsonAirport)
-    "PIN" -> Ok(Pickering)
-    "PO" -> Ok(PortCredit)
-    "RI" -> Ok(RichmondHill)
-    "RO" -> Ok(RougeHill)
-    "RU" -> Ok(Rutherford)
-    "SC" -> Ok(Scarborough)
-    "00132" -> Ok(SquareOneGoTerminal)
-    "SCTH" -> Ok(StCatharines)
-    "ST" -> Ok(Stouffville)
-    "SR" -> Ok(Streetsville)
-    "UI" -> Ok(Unionville)
-    "UN" -> Ok(UnionStation)
-    "WR" -> Ok(WestHarbour)
-    "WE" -> Ok(Weston)
-    "WH" -> Ok(Whitby)
-    _ -> Error("Unknown stop")
-  }
-}
-
-pub fn to_json(stop: Stop) -> json.Json {
-  json.string(to_code(stop))
-}
-
-pub fn decoder() {
-  use decoded_string <- decode.then(decode.string)
-  case from_string(decoded_string) {
-    Ok(stop) -> decode.success(stop)
-    Error(_) -> decode.failure(default_stop, expected: "Stop")
-  }
-}
-
-pub fn to_name(stop: Stop) -> String {
-  case stop {
-    Acton -> "Acton GO"
-    Agincourt -> "Agincourt GO"
-    Ajax -> "Ajax GO"
-    Aldershot -> "Aldershot GO"
-    AllandaleWaterfront -> "Allandale Waterfront GO"
-    Appleby -> "Appleby GO"
-    Aurora -> "Aurora GO"
-    BarrieSouth -> "Barrie South GO"
-    Bloor -> "Bloor GO"
-    Bradford -> "Bradford GO"
-    Bramalea -> "Bramalea GO"
-    BramptonInnovationDistrict -> "Brampton Innovation District GO"
-    Bronte -> "Bronte GO"
-    Burlington -> "Burlington GO"
-    Centennial -> "Centennial GO"
-    Clarkson -> "Clarkson GO"
-    Confederation -> "Confederation GO"
-    Cooksville -> "Cooksville GO"
-    Danforth -> "Danforth GO"
-    Dixie -> "Dixie GO"
-    DownsviewPark -> "Downsview Park GO"
-    DurhamCollegeOshawa -> "Durham College Oshawa GO"
-    EastGwillimbury -> "East Gwillimbury GO"
-    Eglinton -> "Eglinton GO"
-    Erindale -> "Erindale GO"
-    EtobicokeNorth -> "Etobicoke North GO"
-    Exhibition -> "Exhibition GO"
-    Georgetown -> "Georgetown GO"
-    Gormley -> "Gormley GO"
-    GuelphCentral -> "Guelph Central GO"
-    Guildwood -> "Guildwood GO"
-    HamiltonGoCentre -> "Hamilton GO Centre"
-    Kennedy -> "Kennedy GO"
-    KingCity -> "King City GO"
-    Kipling -> "Kipling GO"
-    Kitchener -> "Kitchener GO"
-    Langstaff -> "Langstaff GO"
-    Lisgar -> "Lisgar GO"
-    LongBranch -> "Long Branch GO"
-    Malton -> "Malton GO"
-    Maple -> "Maple GO"
-    Markham -> "Markham GO"
-    Meadowvale -> "Meadowvale GO"
-    Milliken -> "Milliken GO"
-    Milton -> "Milton GO"
-    Mimico -> "Mimico GO"
-    MountDennis -> "Mount Dennis GO"
-    MountJoy -> "Mount Joy GO"
-    MountPleasant -> "Mount Pleasant GO"
-    Newmarket -> "Newmarket GO"
-    NiagaraFalls -> "Niagara Falls GO (VIA Station)"
-    Oakville -> "Oakville GO"
-    OldCummer -> "Old Cummer GO"
-    OldElm -> "Old Elm GO"
-    Oriole -> "Oriole GO"
-    PearsonAirport -> "Pearson Airport"
-    Pickering -> "Pickering GO"
-    PortCredit -> "Port Credit GO"
-    RichmondHill -> "Richmond Hill GO"
-    RougeHill -> "Rouge Hill GO"
-    Rutherford -> "Rutherford GO"
-    Scarborough -> "Scarborough GO"
-    SquareOneGoTerminal -> "Square One GO Terminal"
-    StCatharines -> "St. Catharines GO (VIA Station)"
-    Stouffville -> "Stouffville GO"
-    Streetsville -> "Streetsville GO"
-    Unionville -> "Unionville GO"
-    UnionStation -> "Union Station"
-    WestHarbour -> "West Harbour GO"
-    Weston -> "Weston GO"
-    Whitby -> "Whitby GO"
-  }
-}
-
 pub const barrie = [
   AllandaleWaterfront,
   BarrieSouth,
@@ -426,12 +185,245 @@ pub const lines = [
   stouffville,
 ]
 
-fn equal(a, b: Stop) -> Bool {
-  a == b
+pub fn all() -> List(Stop) {
+  all_internal(default_stop)
 }
 
-pub fn line_has_stop(line: List(Stop), stop: Stop) -> Bool {
-  list.any(line, equal(_, stop))
+fn all_internal(stop: Stop) -> List(Stop) {
+  case stop {
+    Acton
+    | Agincourt
+    | Ajax
+    | Aldershot
+    | AllandaleWaterfront
+    | Appleby
+    | Aurora
+    | BarrieSouth
+    | Bloor
+    | Bradford
+    | Bramalea
+    | BramptonInnovationDistrict
+    | Bronte
+    | Burlington
+    | Centennial
+    | Clarkson
+    | Confederation
+    | Cooksville
+    | Danforth
+    | Dixie
+    | DownsviewPark
+    | DurhamCollegeOshawa
+    | EastGwillimbury
+    | Eglinton
+    | Erindale
+    | EtobicokeNorth
+    | Exhibition
+    | Georgetown
+    | Gormley
+    | GuelphCentral
+    | Guildwood
+    | HamiltonGoCentre
+    | Kennedy
+    | KingCity
+    | Kipling
+    | Kitchener
+    | Langstaff
+    | Lisgar
+    | LongBranch
+    | Malton
+    | Maple
+    | Markham
+    | Meadowvale
+    | Milliken
+    | Milton
+    | Mimico
+    | MountDennis
+    | MountJoy
+    | MountPleasant
+    | Newmarket
+    | NiagaraFalls
+    | Oakville
+    | OldCummer
+    | OldElm
+    | Oriole
+    | PearsonAirport
+    | Pickering
+    | PortCredit
+    | RichmondHill
+    | RougeHill
+    | Rutherford
+    | Scarborough
+    | SquareOneGoTerminal
+    | StCatharines
+    | Stouffville
+    | Streetsville
+    | Unionville
+    | UnionStation
+    | WestHarbour
+    | Weston
+    | Whitby -> [
+      Acton,
+      Agincourt,
+      Ajax,
+      Aldershot,
+      AllandaleWaterfront,
+      Appleby,
+      Aurora,
+      BarrieSouth,
+      Bloor,
+      Bradford,
+      Bramalea,
+      BramptonInnovationDistrict,
+      Bronte,
+      Burlington,
+      Centennial,
+      Clarkson,
+      Confederation,
+      Cooksville,
+      Danforth,
+      Dixie,
+      DownsviewPark,
+      DurhamCollegeOshawa,
+      EastGwillimbury,
+      Eglinton,
+      Erindale,
+      EtobicokeNorth,
+      Exhibition,
+      Georgetown,
+      Gormley,
+      GuelphCentral,
+      Guildwood,
+      HamiltonGoCentre,
+      Kennedy,
+      KingCity,
+      Kipling,
+      Kitchener,
+      Langstaff,
+      Lisgar,
+      LongBranch,
+      Malton,
+      Maple,
+      Markham,
+      Meadowvale,
+      Milliken,
+      Milton,
+      Mimico,
+      MountDennis,
+      MountJoy,
+      MountPleasant,
+      Newmarket,
+      NiagaraFalls,
+      Oakville,
+      OldCummer,
+      OldElm,
+      Oriole,
+      PearsonAirport,
+      Pickering,
+      PortCredit,
+      RichmondHill,
+      RougeHill,
+      Rutherford,
+      Scarborough,
+      SquareOneGoTerminal,
+      StCatharines,
+      Stouffville,
+      Streetsville,
+      Unionville,
+      UnionStation,
+      WestHarbour,
+      Weston,
+      Whitby,
+    ]
+  }
+}
+
+pub fn from_string(str: String) -> Result(Stop, String) {
+  case str {
+    "AC" -> Ok(Acton)
+    "AG" -> Ok(Agincourt)
+    "AJ" -> Ok(Ajax)
+    "AL" -> Ok(Aldershot)
+    "AD" -> Ok(AllandaleWaterfront)
+    "AP" -> Ok(Appleby)
+    "AU" -> Ok(Aurora)
+    "BA" -> Ok(BarrieSouth)
+    "BL" -> Ok(Bloor)
+    "BD" -> Ok(Bradford)
+    "BE" -> Ok(Bramalea)
+    "BR" -> Ok(BramptonInnovationDistrict)
+    "BO" -> Ok(Bronte)
+    "BU" -> Ok(Burlington)
+    "CE" -> Ok(Centennial)
+    "CL" -> Ok(Clarkson)
+    "CF" -> Ok(Confederation)
+    "CO" -> Ok(Cooksville)
+    "DA" -> Ok(Danforth)
+    "DI" -> Ok(Dixie)
+    "DW" -> Ok(DownsviewPark)
+    "OS" -> Ok(DurhamCollegeOshawa)
+    "EA" -> Ok(EastGwillimbury)
+    "EG" -> Ok(Eglinton)
+    "ER" -> Ok(Erindale)
+    "ET" -> Ok(EtobicokeNorth)
+    "EX" -> Ok(Exhibition)
+    "GE" -> Ok(Georgetown)
+    "GO" -> Ok(Gormley)
+    "GL" -> Ok(GuelphCentral)
+    "GU" -> Ok(Guildwood)
+    "HA" -> Ok(HamiltonGoCentre)
+    "KE" -> Ok(Kennedy)
+    "KC" -> Ok(KingCity)
+    "KP" -> Ok(Kipling)
+    "KI" -> Ok(Kitchener)
+    "LA" -> Ok(Langstaff)
+    "LS" -> Ok(Lisgar)
+    "LO" -> Ok(LongBranch)
+    "MA" -> Ok(Malton)
+    "MP" -> Ok(Maple)
+    "MR" -> Ok(Markham)
+    "ME" -> Ok(Meadowvale)
+    "MK" -> Ok(Milliken)
+    "ML" -> Ok(Milton)
+    "MI" -> Ok(Mimico)
+    "MD" -> Ok(MountDennis)
+    "MJ" -> Ok(MountJoy)
+    "MO" -> Ok(MountPleasant)
+    "NE" -> Ok(Newmarket)
+    "NI" -> Ok(NiagaraFalls)
+    "OA" -> Ok(Oakville)
+    "OL" -> Ok(OldCummer)
+    "LI" -> Ok(OldElm)
+    "OR" -> Ok(Oriole)
+    "PA" -> Ok(PearsonAirport)
+    "PIN" -> Ok(Pickering)
+    "PO" -> Ok(PortCredit)
+    "RI" -> Ok(RichmondHill)
+    "RO" -> Ok(RougeHill)
+    "RU" -> Ok(Rutherford)
+    "SC" -> Ok(Scarborough)
+    "00132" -> Ok(SquareOneGoTerminal)
+    "SCTH" -> Ok(StCatharines)
+    "ST" -> Ok(Stouffville)
+    "SR" -> Ok(Streetsville)
+    "UI" -> Ok(Unionville)
+    "UN" -> Ok(UnionStation)
+    "WR" -> Ok(WestHarbour)
+    "WE" -> Ok(Weston)
+    "WH" -> Ok(Whitby)
+    _ -> Error("Unknown stop")
+  }
+}
+
+pub fn decoder() {
+  use decoded_string <- decode.then(decode.string)
+  case from_string(decoded_string) {
+    Ok(stop) -> decode.success(stop)
+    Error(_) -> decode.failure(default_stop, expected: "Stop")
+  }
+}
+
+fn equal(a, b: Stop) -> Bool {
+  a == b
 }
 
 /// Assumes every stop appears in exactly one line (Except Union)
@@ -450,6 +442,166 @@ pub fn get_sister_stops(stop: Stop) -> Option(List(Stop)) {
   }
 }
 
+pub fn line_has_stop(line: List(Stop), stop: Stop) -> Bool {
+  list.any(line, equal(_, stop))
+}
+
 pub fn remove_stop(list: List(Stop), stop: Stop) -> List(Stop) {
   list.filter(list, fn(s) { s != stop })
+}
+
+pub fn to_code(stop: Stop) -> String {
+  case stop {
+    Acton -> "AC"
+    Agincourt -> "AG"
+    Ajax -> "AJ"
+    Aldershot -> "AL"
+    AllandaleWaterfront -> "AD"
+    Appleby -> "AP"
+    Aurora -> "AU"
+    BarrieSouth -> "BA"
+    Bloor -> "BL"
+    Bradford -> "BD"
+    Bramalea -> "BE"
+    BramptonInnovationDistrict -> "BR"
+    Bronte -> "BO"
+    Burlington -> "BU"
+    Centennial -> "CE"
+    Clarkson -> "CL"
+    Confederation -> "CF"
+    Cooksville -> "CO"
+    Danforth -> "DA"
+    Dixie -> "DI"
+    DownsviewPark -> "DW"
+    DurhamCollegeOshawa -> "OS"
+    EastGwillimbury -> "EA"
+    Eglinton -> "EG"
+    Erindale -> "ER"
+    EtobicokeNorth -> "ET"
+    Exhibition -> "EX"
+    Georgetown -> "GE"
+    Gormley -> "GO"
+    GuelphCentral -> "GL"
+    Guildwood -> "GU"
+    HamiltonGoCentre -> "HA"
+    Kennedy -> "KE"
+    KingCity -> "KC"
+    Kipling -> "KP"
+    Kitchener -> "KI"
+    Langstaff -> "LA"
+    Lisgar -> "LS"
+    LongBranch -> "LO"
+    Malton -> "MA"
+    Maple -> "MP"
+    Markham -> "MR"
+    Meadowvale -> "ME"
+    Milliken -> "MK"
+    Milton -> "ML"
+    Mimico -> "MI"
+    MountDennis -> "MD"
+    MountJoy -> "MJ"
+    MountPleasant -> "MO"
+    Newmarket -> "NE"
+    NiagaraFalls -> "NI"
+    Oakville -> "OA"
+    OldCummer -> "OL"
+    OldElm -> "LI"
+    Oriole -> "OR"
+    PearsonAirport -> "PA"
+    Pickering -> "PIN"
+    PortCredit -> "PO"
+    RichmondHill -> "RI"
+    RougeHill -> "RO"
+    Rutherford -> "RU"
+    Scarborough -> "SC"
+    SquareOneGoTerminal -> "00132"
+    StCatharines -> "SCTH"
+    Stouffville -> "ST"
+    Streetsville -> "SR"
+    Unionville -> "UI"
+    UnionStation -> "UN"
+    WestHarbour -> "WR"
+    Weston -> "WE"
+    Whitby -> "WH"
+  }
+}
+
+pub fn to_json(stop: Stop) -> json.Json {
+  json.string(to_code(stop))
+}
+
+pub fn to_name(stop: Stop) -> String {
+  case stop {
+    Acton -> "Acton GO"
+    Agincourt -> "Agincourt GO"
+    Ajax -> "Ajax GO"
+    Aldershot -> "Aldershot GO"
+    AllandaleWaterfront -> "Allandale Waterfront GO"
+    Appleby -> "Appleby GO"
+    Aurora -> "Aurora GO"
+    BarrieSouth -> "Barrie South GO"
+    Bloor -> "Bloor GO"
+    Bradford -> "Bradford GO"
+    Bramalea -> "Bramalea GO"
+    BramptonInnovationDistrict -> "Brampton Innovation District GO"
+    Bronte -> "Bronte GO"
+    Burlington -> "Burlington GO"
+    Centennial -> "Centennial GO"
+    Clarkson -> "Clarkson GO"
+    Confederation -> "Confederation GO"
+    Cooksville -> "Cooksville GO"
+    Danforth -> "Danforth GO"
+    Dixie -> "Dixie GO"
+    DownsviewPark -> "Downsview Park GO"
+    DurhamCollegeOshawa -> "Durham College Oshawa GO"
+    EastGwillimbury -> "East Gwillimbury GO"
+    Eglinton -> "Eglinton GO"
+    Erindale -> "Erindale GO"
+    EtobicokeNorth -> "Etobicoke North GO"
+    Exhibition -> "Exhibition GO"
+    Georgetown -> "Georgetown GO"
+    Gormley -> "Gormley GO"
+    GuelphCentral -> "Guelph Central GO"
+    Guildwood -> "Guildwood GO"
+    HamiltonGoCentre -> "Hamilton GO Centre"
+    Kennedy -> "Kennedy GO"
+    KingCity -> "King City GO"
+    Kipling -> "Kipling GO"
+    Kitchener -> "Kitchener GO"
+    Langstaff -> "Langstaff GO"
+    Lisgar -> "Lisgar GO"
+    LongBranch -> "Long Branch GO"
+    Malton -> "Malton GO"
+    Maple -> "Maple GO"
+    Markham -> "Markham GO"
+    Meadowvale -> "Meadowvale GO"
+    Milliken -> "Milliken GO"
+    Milton -> "Milton GO"
+    Mimico -> "Mimico GO"
+    MountDennis -> "Mount Dennis GO"
+    MountJoy -> "Mount Joy GO"
+    MountPleasant -> "Mount Pleasant GO"
+    Newmarket -> "Newmarket GO"
+    NiagaraFalls -> "Niagara Falls GO (VIA Station)"
+    Oakville -> "Oakville GO"
+    OldCummer -> "Old Cummer GO"
+    OldElm -> "Old Elm GO"
+    Oriole -> "Oriole GO"
+    PearsonAirport -> "Pearson Airport"
+    Pickering -> "Pickering GO"
+    PortCredit -> "Port Credit GO"
+    RichmondHill -> "Richmond Hill GO"
+    RougeHill -> "Rouge Hill GO"
+    Rutherford -> "Rutherford GO"
+    Scarborough -> "Scarborough GO"
+    SquareOneGoTerminal -> "Square One GO Terminal"
+    StCatharines -> "St. Catharines GO (VIA Station)"
+    Stouffville -> "Stouffville GO"
+    Streetsville -> "Streetsville GO"
+    Unionville -> "Unionville GO"
+    UnionStation -> "Union Station"
+    WestHarbour -> "West Harbour GO"
+    Weston -> "Weston GO"
+    Whitby -> "Whitby GO"
+  }
 }

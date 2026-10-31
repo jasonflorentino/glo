@@ -81,12 +81,7 @@ fn form_view(model: Model) -> Element(Message) {
             attribute.value(stops.to_code(model.from_stop)),
             event.on_change(UserChangedFrom),
           ],
-          [
-            // TODO: Add all stops here
-            html.option([attribute.value("AC")], "Action GO"),
-            html.option([attribute.value("UN")], "Union Station GO"),
-            html.option([attribute.value("WR")], "West Harbour GO"),
-          ],
+          stops.all() |> list.map(stop_to_option),
         ),
       ]),
       html.div([attribute.class("flex items-center w-full")], [
@@ -104,25 +99,22 @@ fn form_view(model: Model) -> Element(Message) {
             attribute.class(
               "p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500",
             ),
+            attribute.value(stops.to_code(model.from_stop)),
           ],
-          [
-            // TODO: Use model.to_stop_options here 
-            html.option([attribute.value("AC")], "Action GO"),
-            html.option(
-              [
-                attribute.value("UN"),
-              ],
-              "Union Station GO",
-            ),
-            html.option(
-              [attribute.value("WR"), attribute.selected(True)],
-              "West Harbour GO",
-            ),
-          ],
+          model.to_stop_options
+            |> option.then(fn(stop_options) {
+              list.map(stop_options, stop_to_option)
+              |> option.Some
+            })
+            |> option.unwrap([html.option([attribute.value("error")], "Error")]),
         ),
       ]),
     ]),
   ])
+}
+
+fn stop_to_option(s: stops.Stop) {
+  html.option([attribute.value(stops.to_code(s))], stops.to_name(s))
 }
 
 fn timetable_view(
