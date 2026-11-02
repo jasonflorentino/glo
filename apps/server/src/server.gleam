@@ -7,6 +7,7 @@ import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
 import go_api/destinations as go_destinations
+import go_api/stops.{WestHarbour}
 import go_api/timetable as go_timetable
 import lustre/attribute
 import lustre/element
@@ -73,11 +74,29 @@ pub fn handle_root(_req: wisp.Request) -> wisp.Response {
     Error(_) -> None
   }
   let error = case result {
-    Ok(_) -> option.None
-    Error(e) -> option.Some(e)
+    Ok(_) -> None
+    Error(e) -> Some(e)
+  }
+  let #(from_stop, to_stop) = case timetable {
+    Some(timetable) -> {
+      let from =
+        stops.from_string(timetable.departure_stop_id)
+        |> option.from_result
+        |> option.unwrap(WestHarbour)
+      let to =
+        stops.from_string(timetable.arrival_stop_id) |> option.from_result
+      #(from, to)
+    }
+    None -> #(WestHarbour, None)
+  }
+  let to_stop_options = case from_stop, to_stop {
+    _, Some(to) -> stops.get_line_stops(to)
+    _, _ -> stops.get_sister_stops(from_stop)
   }
 
-  let initial_state = model.empty_state()
+  let initial_state =
+    model.Model(timetable:, from_stop:, to_stop:, to_stop_options:, error:)
+
   let html =
     html.html([attribute.lang("en")], [
       html.head([], [

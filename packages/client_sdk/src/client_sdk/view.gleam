@@ -1,11 +1,11 @@
-import client_sdk/messages.{type Message, UserChangedFrom, UserPressedFetch}
+import client_sdk/components/form.{form_view}
+import client_sdk/messages.{type Message, UserPressedFetch}
 import client_sdk/model.{type Model}
 import common/util
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
-import go_api/stops
 import go_api/timetable
 import go_api/trip
 import lustre/attribute
@@ -58,63 +58,6 @@ pub fn view(model: Model) -> Element(Message) {
         html.div([attribute.class("text-red-400")], [html.text(error)])
     },
   ])
-}
-
-fn form_view(model: Model) -> Element(Message) {
-  html.form([attribute.class("flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6")], [
-    html.div([attribute.class("flex gap-4 flex-col sm:flex-row")], [
-      html.div([attribute.class("flex items-center w-full")], [
-        html.label(
-          [
-            attribute.for("fromStop"),
-            attribute.class("block min-w-12 md:text-lg"),
-          ],
-          [html.text("From")],
-        ),
-        html.select(
-          [
-            attribute.id("fromStop"),
-            attribute.name("from"),
-            attribute.class(
-              "p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-blue-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500",
-            ),
-            attribute.value(stops.to_code(model.from_stop)),
-            event.on_change(UserChangedFrom),
-          ],
-          stops.all() |> list.map(stop_to_option),
-        ),
-      ]),
-      html.div([attribute.class("flex items-center w-full")], [
-        html.label(
-          [
-            attribute.for("toStop"),
-            attribute.class("block min-w-12 md:text-lg drop-shadow-md"),
-          ],
-          [html.text("To")],
-        ),
-        html.select(
-          [
-            attribute.id("toStop"),
-            attribute.name("to"),
-            attribute.class(
-              "p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500",
-            ),
-            attribute.value(stops.to_code(model.from_stop)),
-          ],
-          model.to_stop_options
-            |> option.then(fn(stop_options) {
-              list.map(stop_options, stop_to_option)
-              |> option.Some
-            })
-            |> option.unwrap([html.option([attribute.value("error")], "Error")]),
-        ),
-      ]),
-    ]),
-  ])
-}
-
-fn stop_to_option(s: stops.Stop) {
-  html.option([attribute.value(stops.to_code(s))], stops.to_name(s))
 }
 
 fn timetable_view(

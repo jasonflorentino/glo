@@ -3,19 +3,20 @@ import client_sdk/messages.{
   ServerReturnedTimetable, UserChangedFrom, UserPressedFetch,
 }
 import client_sdk/model.{type Model, Model}
-import gleam/option.{Some}
+import gleam/option.{None, Some}
 import go_api/stops
 import go_api/timetable
 import lustre/effect.{type Effect}
 import rsvp
 
 pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
+  echo message
   case message {
-    ComputerUpdatedFrom(from_stop, to_stops) -> #(
-      Model(..model, from_stop: from_stop, to_stop_options: to_stops),
+    ComputerUpdatedFrom(from_stop, to_stop, to_stop_options) -> #(
+      Model(..model, from_stop:, to_stop:, to_stop_options:),
       effect.none(),
     )
-    UserChangedFrom(from) -> #(model, update_from(from))
+    UserChangedFrom(from) -> handle_user_changed_from(model, from)
     UserPressedFetch -> #(model, fetch_timetable())
     ServerReturnedTimetable(timetable) -> #(
       Model(..model, timetable: Some(timetable)),
@@ -29,16 +30,34 @@ pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
   }
 }
 
-fn update_from(from: String) -> Effect(Message) {
-  use dispatch <- effect.from
+fn handle_user_changed_from(
+  model: Model,
+  from: String,
+) -> #(Model, Effect(Message)) {
   let from = stops.from_string(from)
 
   case from {
     Ok(from_stop) -> {
-      let to_stops = stops.get_sister_stops(from_stop)
-      dispatch(ComputerUpdatedFrom(from_stop, to_stops))
+      case from_stop == model.from_stop {
+        True -> #(model, effect.none())
+        False -> {
+          let to_stop_options = stops.get_sister_stops(from_stop)
+          let keep_current_to = case to_stop_options, model.to_stop {
+            Some(line), Some(to) -> stops.line_has_stop(line, to)
+            _, _ -> False
+          }
+          let to_stop = case keep_current_to {
+            True -> model.to_stop
+            False -> None
+          }
+          #(
+            Model(..model, from_stop:, to_stop:, to_stop_options:),
+            effect.none(),
+          )
+        }
+      }
     }
-    Error(msg) -> dispatch(RuntimeError(msg))
+    Error(msg) -> #(Model(..model, error: Some(msg)), effect.none())
   }
 }
 

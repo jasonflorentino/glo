@@ -426,20 +426,23 @@ fn equal(a, b: Stop) -> Bool {
   a == b
 }
 
-/// Assumes every stop appears in exactly one line (Except Union)
-pub fn get_sister_stops(stop: Stop) -> Option(List(Stop)) {
+/// Returns the list of stops that contains the given stop.
+/// If Union Station is given, since it is a member of all lines, 
+/// a union of all lines is returned. (No pun intended.)
+pub fn get_line_stops(stop: Stop) -> Option(List(Stop)) {
   case stop == UnionStation {
     True -> {
-      lines |> list.flatten |> list.unique |> remove_stop(UnionStation) |> Some
+      lines |> list.flatten |> list.unique |> Some
     }
     False -> {
-      let line = lines |> list.find(line_has_stop(_, stop))
-      case line {
-        Ok(line) -> line |> remove_stop(stop) |> Some
-        Error(_) -> None
-      }
+      lines |> list.find(line_has_stop(_, stop)) |> option.from_result
     }
   }
+}
+
+/// Returns the list of other stops reachable from the given stop.
+pub fn get_sister_stops(stop: Stop) -> Option(List(Stop)) {
+  stop |> get_line_stops |> option.map(remove_stop(_, stop))
 }
 
 pub fn line_has_stop(line: List(Stop), stop: Stop) -> Bool {
