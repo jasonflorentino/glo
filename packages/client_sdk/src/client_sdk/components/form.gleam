@@ -1,4 +1,4 @@
-import client_sdk/messages.{type Message, UserChangedFrom}
+import client_sdk/messages.{type Message, UserChangedFrom, UserChangedTo}
 import client_sdk/model.{type Model}
 import gleam/list
 import gleam/option.{None, Some}
@@ -29,9 +29,10 @@ pub fn form_view(model: Model) -> Element(Message) {
             ),
             attribute.value(model.from_stop |> stops.to_code),
             attribute.default_value(model.from_stop |> stops.to_code),
-            event.on_input(UserChangedFrom),
+            event.on_change(UserChangedFrom),
           ],
-          stops.all() |> list.map(stop_to_option(_, Some(model.from_stop))),
+          stops.all()
+            |> list.map(stop_to_option(_, selected: Some(model.from_stop))),
         ),
       ]),
 
@@ -51,15 +52,12 @@ pub fn form_view(model: Model) -> Element(Message) {
             attribute.class(
               "p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500",
             ),
-            attribute.value(
-              model.to_stop
-              |> option.then(fn(c) { stops.to_code(c) |> Some })
-              |> option.unwrap("None"),
-            ),
+            attribute.value(model.to_stop |> stop_code_or_none),
+            event.on_change(UserChangedTo),
           ],
           model.to_stop_options
             |> option.then(fn(stop_options) {
-              list.map(stop_options, stop_to_option(_, model.to_stop))
+              list.map(stop_options, stop_to_option(_, selected: model.to_stop))
               |> option.Some
             })
             |> option.unwrap([html.option([attribute.value("error")], "Error")]),
@@ -69,11 +67,17 @@ pub fn form_view(model: Model) -> Element(Message) {
   ])
 }
 
-fn stop_to_option(s: stops.Stop, selected: option.Option(stops.Stop)) {
+fn stop_code_or_none(s: option.Option(stops.Stop)) -> String {
+  s
+  |> option.map(stops.to_code)
+  |> option.unwrap("None")
+}
+
+fn stop_to_option(s: stops.Stop, selected slct: option.Option(stops.Stop)) {
   html.option(
     [
       attribute.value(stops.to_code(s)),
-      attribute.selected(case selected {
+      attribute.selected(case slct {
         Some(stop) -> s == stop
         None -> False
       }),

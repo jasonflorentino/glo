@@ -2,6 +2,8 @@ import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/order
+import gleam/string
 
 pub type Stop {
   Acton
@@ -443,6 +445,11 @@ pub fn get_line_stops(stop: Stop) -> Option(List(Stop)) {
 /// Returns the list of other stops reachable from the given stop.
 pub fn get_sister_stops(stop: Stop) -> Option(List(Stop)) {
   stop |> get_line_stops |> option.map(remove_stop(_, stop))
+}
+
+/// Compares Stops by name
+pub fn compare(a, b: Stop) -> order.Order {
+  string.compare(to_name(a), to_name(b))
 }
 
 pub fn line_has_stop(line: List(Stop), stop: Stop) -> Bool {

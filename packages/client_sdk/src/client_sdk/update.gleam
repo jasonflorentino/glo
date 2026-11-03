@@ -1,8 +1,9 @@
 import client_sdk/messages.{
   type Message, ComputerUpdatedFrom, FetchTimetableError, RuntimeError,
-  ServerReturnedTimetable, UserChangedFrom, UserPressedFetch,
+  ServerReturnedTimetable, UserChangedFrom, UserChangedTo, UserPressedFetch,
 }
 import client_sdk/model.{type Model, Model}
+import gleam/list
 import gleam/option.{None, Some}
 import go_api/stops
 import go_api/timetable
@@ -17,6 +18,7 @@ pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
       effect.none(),
     )
     UserChangedFrom(from) -> handle_user_changed_from(model, from)
+    UserChangedTo(to) -> handle_user_changed_to(model, to)
     UserPressedFetch -> #(model, fetch_timetable())
     ServerReturnedTimetable(timetable) -> #(
       Model(..model, timetable: Some(timetable)),
@@ -37,11 +39,15 @@ fn handle_user_changed_from(
   let from = stops.from_string(from)
 
   case from {
+    Error(msg) -> set_error(model, msg)
     Ok(from_stop) -> {
       case from_stop == model.from_stop {
-        True -> #(model, effect.none())
+        True -> noop(model)
         False -> {
-          let to_stop_options = stops.get_sister_stops(from_stop)
+          let to_stop_options =
+            from_stop
+            |> stops.get_sister_stops
+            |> option.map(list.sort(_, stops.compare))
           let keep_current_to = case to_stop_options, model.to_stop {
             Some(line), Some(to) -> stops.line_has_stop(line, to)
             _, _ -> False
@@ -57,8 +63,47 @@ fn handle_user_changed_from(
         }
       }
     }
-    Error(msg) -> #(Model(..model, error: Some(msg)), effect.none())
   }
+}
+
+fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message)) {
+  let to = stops.from_string(to)
+  case to {
+    Error(msg) -> set_error(model, msg)
+    Ok(to_stop) -> {
+      let to_stop_options =
+        to_stop
+        |> stops.get_line_stops
+        |> option.map(list.sort(_, stops.compare))
+      case model.to_stop {
+        Some(curr_to) -> {
+          case curr_to == to_stop {
+            True -> noop(model)
+            False -> {
+              #(
+                Model(..model, to_stop: Some(to_stop), to_stop_options:),
+                effect.none(),
+              )
+            }
+          }
+        }
+        None -> {
+          #(
+            Model(..model, to_stop: Some(to_stop), to_stop_options:),
+            effect.none(),
+          )
+        }
+      }
+    }
+  }
+}
+
+fn noop(model: Model) -> #(Model, Effect(Message)) {
+  #(model, effect.none())
+}
+
+fn set_error(model: Model, msg: String) -> #(Model, Effect(Message)) {
+  #(Model(..model, error: Some(msg)), effect.none())
 }
 
 fn fetch_timetable() -> Effect(Message) {

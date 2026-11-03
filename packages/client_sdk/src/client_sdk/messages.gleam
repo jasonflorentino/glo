@@ -13,4 +13,5 @@ pub type Message {
   ServerReturnedTimetable(timetable.Timetable)
   UserPressedFetch
   UserChangedFrom(String)
+  UserChangedTo(String)
 }
