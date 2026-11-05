@@ -5,7 +5,7 @@ import client_sdk/messages.{
 import client_sdk/model.{type Model, Model}
 import gleam/list
 import gleam/option.{None, Some}
-import go_api/stops
+import go_api/stops.{UnionStation}
 import go_api/timetable
 import lustre/effect.{type Effect}
 import rsvp
@@ -48,9 +48,10 @@ fn handle_user_changed_from(
             from_stop
             |> stops.get_sister_stops
             |> option.map(list.sort(_, stops.compare))
-          let keep_current_to = case to_stop_options, model.to_stop {
-            Some(line), Some(to) -> stops.line_has_stop(line, to)
-            _, _ -> False
+          let keep_current_to = case from_stop, to_stop_options, model.to_stop {
+            UnionStation, _, _ -> False
+            _, Some(line), Some(to) -> stops.line_has_stop(line, to)
+            _, _, _ -> False
           }
           let to_stop = case keep_current_to {
             True -> model.to_stop
