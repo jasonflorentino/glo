@@ -74,6 +74,7 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
     |> option.from_result
   let to = params |> list.key_find("to") |> option.from_result
   let date = params |> list.key_find("date") |> option.from_result
+  // TODO: Don't fetch timetable if only `from` and not `to` is provided
 
   let result = go_trans.fetch_timetable(from, to, date)
   let timetable = case result {
@@ -96,6 +97,7 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
     }
     None -> #(WestHarbour, None)
   }
+  //TODO: consider from stop line if to stop is UN (don't put all stop options if line is determined from From
   let to_stop_options = case from_stop, to_stop {
     _, Some(to) -> stops.get_line_stops(to)
     _, _ -> stops.get_sister_stops(from_stop)

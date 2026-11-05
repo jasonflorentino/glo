@@ -5,9 +5,11 @@ import client_sdk/messages.{
 import client_sdk/model.{type Model, Model}
 import gleam/list
 import gleam/option.{None, Some}
+import gleam/uri
 import go_api/stops.{UnionStation}
 import go_api/timetable
 import lustre/effect.{type Effect}
+import modem
 import rsvp
 
 pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
@@ -76,6 +78,11 @@ fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message))
         to_stop
         |> stops.get_line_stops
         |> option.map(list.sort(_, stops.compare))
+      let query_string =
+        uri.query_to_string([
+          #("from", model.from_stop |> stops.to_code),
+          #("to", to_stop |> stops.to_code),
+        ])
       case model.to_stop {
         Some(curr_to) -> {
           case curr_to == to_stop {
@@ -83,7 +90,7 @@ fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message))
             False -> {
               #(
                 Model(..model, to_stop: Some(to_stop), to_stop_options:),
-                effect.none(),
+                modem.push("/", Some(query_string), None),
               )
             }
           }
@@ -91,7 +98,7 @@ fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message))
         None -> {
           #(
             Model(..model, to_stop: Some(to_stop), to_stop_options:),
-            effect.none(),
+            modem.push("/", Some(query_string), None),
           )
         }
       }
