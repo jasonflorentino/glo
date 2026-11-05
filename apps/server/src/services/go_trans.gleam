@@ -23,9 +23,10 @@ pub fn fetch_destinations(
 }
 
 pub fn fetch_timetable(
-  from: Option(String),
-  to: Option(String),
-  date: Option(String),
+  // TODO: Type these as Option(Stop) and either 404 or 200 with an error message on page
+  from from: Option(String),
+  to to: Option(String),
+  date date: Option(String),
 ) -> Result(go_timetable.Timetable, String) {
   let now = timestamp.system_time()
   let from =

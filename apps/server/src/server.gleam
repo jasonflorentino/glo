@@ -5,7 +5,6 @@ import gleam/http.{Get}
 import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
-import gleam/result
 import go_api/destinations as go_destinations
 import go_api/stops.{WestHarbour}
 import go_api/timetable as go_timetable
@@ -67,8 +66,16 @@ pub fn app_middleware(
   next(req)
 }
 
-pub fn handle_root(_req: wisp.Request) -> wisp.Response {
-  let result = go_trans.fetch_timetable(option.None, option.None, option.None)
+pub fn handle_root(req: wisp.Request) -> wisp.Response {
+  let params = wisp.get_query(req)
+  let from =
+    params
+    |> list.key_find("from")
+    |> option.from_result
+  let to = params |> list.key_find("to") |> option.from_result
+  let date = params |> list.key_find("date") |> option.from_result
+
+  let result = go_trans.fetch_timetable(from, to, date)
   let timetable = case result {
     Ok(timetable) -> Some(timetable)
     Error(_) -> None
@@ -147,16 +154,10 @@ pub fn handle_ping(_req: wisp.Request) -> wisp.Response {
   |> wisp.json_body("pong")
 }
 
-fn option_from_result(r: Result(a, _)) -> option.Option(a) {
-  r
-  |> result.map(option.Some)
-  |> result.unwrap(or: option.None)
-}
-
 pub fn handle_destinations(req: wisp.Request) -> wisp.Response {
   let params = wisp.get_query(req)
-  let to = params |> list.key_find("to") |> option_from_result
-  let date = params |> list.key_find("date") |> option_from_result
+  let to = params |> list.key_find("to") |> option.from_result
+  let date = params |> list.key_find("date") |> option.from_result
   let result = go_trans.fetch_destinations(to, date)
 
   case result {
@@ -182,9 +183,9 @@ pub fn handle_timetable(req: wisp.Request) -> wisp.Response {
   let from =
     params
     |> list.key_find("from")
-    |> option_from_result
-  let to = params |> list.key_find("to") |> option_from_result
-  let date = params |> list.key_find("date") |> option_from_result
+    |> option.from_result
+  let to = params |> list.key_find("to") |> option.from_result
+  let date = params |> list.key_find("date") |> option.from_result
   let result = go_trans.fetch_timetable(from, to, date)
 
   case result {
