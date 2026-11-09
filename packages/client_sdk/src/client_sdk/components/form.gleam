@@ -53,11 +53,13 @@ pub fn form_view(model: Model) -> Element(Message) {
               "p-3 block h-12 md:h-14 rounded text-lg font-medium md:text-2xl w-full text-red-200 border border-stone-600 bg-stone-950 focus:outline-none focus:ring-2 focus:ring-green-500",
             ),
             attribute.value(model.to_stop |> stop_code_or_none),
+            attribute.default_value(model.to_stop |> stop_code_or_none),
             event.on_change(UserChangedTo),
           ],
           model.to_stop_options
             |> option.then(fn(stop_options) {
               list.map(stop_options, stop_to_option(_, selected: model.to_stop))
+              |> with_empty_option(model)
               |> option.Some
             })
             |> option.unwrap([html.option([attribute.value("error")], "Error")]),
@@ -67,10 +69,31 @@ pub fn form_view(model: Model) -> Element(Message) {
   ])
 }
 
+fn with_empty_option(
+  options: List(Element(a)),
+  model: Model,
+) -> List(Element(a)) {
+  case model.to_stop {
+    None -> [
+      html.option(
+        [
+          attribute.value(""),
+          attribute.selected(True),
+          attribute.disabled(True),
+          attribute.hidden(True),
+        ],
+        "-- Choose a stop --",
+      ),
+      ..options
+    ]
+    Some(_) -> options
+  }
+}
+
 fn stop_code_or_none(s: option.Option(stops.Stop)) -> String {
   s
   |> option.map(stops.to_code)
-  |> option.unwrap("None")
+  |> option.unwrap("")
 }
 
 fn stop_to_option(s: stops.Stop, selected slct: option.Option(stops.Stop)) {

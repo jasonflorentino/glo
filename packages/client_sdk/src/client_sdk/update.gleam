@@ -52,7 +52,8 @@ fn handle_user_changed_from(
             |> option.map(list.sort(_, stops.compare))
           let keep_current_to = case from_stop, to_stop_options, model.to_stop {
             UnionStation, _, _ -> False
-            _, Some(line), Some(to) -> stops.line_has_stop(line, to)
+            _, Some(line), Some(to) ->
+              stops.line_has_stop(line, to) && to != UnionStation
             _, _, _ -> False
           }
           let to_stop = case keep_current_to {

@@ -1,5 +1,6 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
 
-@source "../../../packages/common/src/**/*.gleam";
-@source "../../../packages/client_sdk/src/**/*.gleam";
-@source "../../server/src/**/*.gleam";
+@source "../src";
+@source "../../../packages/common/src";
+@source "../../../packages/client_sdk/src";
+@source "../../server/src";
