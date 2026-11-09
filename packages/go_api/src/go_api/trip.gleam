@@ -104,3 +104,7 @@ const rail = 1
 pub fn is_rail(t: Trip) -> Bool {
   t.transit_type == rail
 }
+
+pub fn is_direct(t: Trip) -> Bool {
+  t.transfers == 0
+}

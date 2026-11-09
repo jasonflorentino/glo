@@ -31,7 +31,10 @@ pub fn timetable_view(model: Model) -> List(Element(Message)) {
           ]),
         ]),
         html.div([attribute.class("mt-2")], [
-          html.ol([], list.map(timetable.trips, trip_view)),
+          case !list.is_empty(timetable.trips) {
+            True -> html.ol([], list.map(timetable.trips, trip_view))
+            False -> html.p([], [html.text("No trips to show")])
+          },
         ]),
       ]
     }

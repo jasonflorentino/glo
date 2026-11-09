@@ -1,5 +1,6 @@
 import gleam/dynamic/decode
 import gleam/json
+import gleam/list
 import go_api/trip
 
 pub type Timetable {
@@ -79,4 +80,12 @@ pub fn to_json(timetable: Timetable) -> json.Json {
     #("service_name", json.string(service_name)),
     #("trips", json.array(trips, trip.to_json)),
   ])
+}
+
+pub fn only_direct_train_trips(timetable: Timetable) -> Timetable {
+  Timetable(
+    ..timetable,
+    trips: timetable.trips
+      |> list.filter(fn(t) { trip.is_direct(t) && trip.is_rail(t) }),
+  )
 }

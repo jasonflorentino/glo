@@ -1,5 +1,6 @@
 import common/util
 import gleam/option.{type Option}
+import gleam/result
 import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp
@@ -37,6 +38,7 @@ pub fn fetch_timetable(
 
   let client = go_client.new(config)
   go_client.get_timetable(client, from, to, date)
+  |> result.map(go_timetable.only_direct_train_trips)
 }
 
 fn get_default_date(now: timestamp.Timestamp) -> String {

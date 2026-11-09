@@ -79,11 +79,6 @@ fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message))
         to_stop
         |> stops.get_line_stops
         |> option.map(list.sort(_, stops.compare))
-      let query_string =
-        uri.query_to_string([
-          #("from", model.from_stop |> stops.to_code),
-          #("to", to_stop |> stops.to_code),
-        ])
       case model.to_stop {
         Some(curr_to) -> {
           case curr_to == to_stop {
@@ -91,7 +86,7 @@ fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message))
             False -> {
               #(
                 Model(..model, to_stop: Some(to_stop), to_stop_options:),
-                modem.push("/", Some(query_string), None),
+                handle_user_changed_to_fetch(model, to_stop),
               )
             }
           }
@@ -99,12 +94,32 @@ fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message))
         None -> {
           #(
             Model(..model, to_stop: Some(to_stop), to_stop_options:),
-            modem.push("/", Some(query_string), None),
+            handle_user_changed_to_fetch(model, to_stop),
           )
         }
       }
     }
   }
+}
+
+fn handle_user_changed_to_fetch(model: Model, to: stops.Stop) -> Effect(Message) {
+  let query_string =
+    uri.query_to_string([
+      #("from", model.from_stop |> stops.to_code),
+      #("to", to |> stops.to_code),
+    ])
+  effect.batch([
+    modem.push("/", Some(query_string), None),
+    rsvp.get(
+      "/api/timetable?" <> query_string,
+      rsvp.expect_json(timetable.decoder_json(), fn(res) {
+        case res {
+          Ok(timetable) -> ServerReturnedTimetable(timetable)
+          Error(err) -> FetchTimetableError(string_from_rsvp_error(err))
+        }
+      }),
+    ),
+  ])
 }
 
 fn noop(model: Model) -> #(Model, Effect(Message)) {
