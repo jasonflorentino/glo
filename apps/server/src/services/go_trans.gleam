@@ -24,7 +24,6 @@ pub fn fetch_destinations(
 }
 
 pub fn fetch_timetable(
-  // TODO: Type these as Option(Stop) and either 404 or 200 with an error message on page
   from from: Option(String),
   to to: Option(String),
   date date: Option(String),

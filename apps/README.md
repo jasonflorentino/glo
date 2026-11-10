@@ -1,4 +1,4 @@
-# `/apps`
+# apps/
 
 Each dir is a Gleam project for a separate application
 
