@@ -7,8 +7,7 @@ import go_api/timetable
 pub type Model {
   Model(
     timetable: Option(timetable.Timetable),
-    //TODO: Make this Option(Stop)
-    from_stop: stops.Stop,
+    from_stop: Option(stops.Stop),
     to_stop: Option(stops.Stop),
     to_stop_options: Option(List(stops.Stop)),
     error: Option(String),
@@ -18,7 +17,7 @@ pub type Model {
 pub fn empty_state() {
   Model(
     timetable: option.None,
-    from_stop: WestHarbour,
+    from_stop: Some(WestHarbour),
     to_stop: Some(UnionStation),
     to_stop_options: stops.get_sister_stops(WestHarbour),
     error: option.Some("empty"),
@@ -32,7 +31,7 @@ pub fn model_to_json(model: Model) -> json.Json {
       option.None -> json.null()
       option.Some(value) -> timetable.to_json(value)
     }),
-    #("from_stop", stops.to_json(from_stop)),
+    #("from_stop", json.nullable(from_stop, of: stops.to_json)),
     #("to_stop", json.nullable(to_stop, of: stops.to_json)),
     #(
       "to_stop_options",
@@ -50,7 +49,7 @@ pub fn model_decoder() -> decode.Decoder(Model) {
     "timetable",
     decode.optional(timetable.decoder_json()),
   )
-  use from_stop <- decode.field("from_stop", stops.decoder())
+  use from_stop <- decode.field("from_stop", decode.optional(stops.decoder()))
   use to_stop <- decode.field("to_stop", decode.optional(stops.decoder()))
   use to_stop_options <- decode.field(
     "to_stop_options",

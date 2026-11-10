@@ -38,7 +38,7 @@ pub fn timetable_view(model: Model) -> List(Element(Message)) {
         ]),
       ]
     }
-    None -> [element.none()]
+    None -> [html.div([], [html.text("No trips to show")])]
   }
 }
 

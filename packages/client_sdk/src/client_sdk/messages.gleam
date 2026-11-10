@@ -4,7 +4,7 @@ import go_api/timetable
 
 pub type Message {
   ComputerUpdatedFrom(
-    stops.Stop,
+    option.Option(stops.Stop),
     option.Option(stops.Stop),
     option.Option(List(stops.Stop)),
   )

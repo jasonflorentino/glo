@@ -1,14 +1,12 @@
 import client_sdk/components/form.{form_view}
 import client_sdk/components/timetable.{timetable_view}
-import client_sdk/messages.{type Message, UserPressedFetch}
+import client_sdk/messages.{type Message}
 import client_sdk/model.{type Model}
 import gleam/json
-import gleam/option.{None, Some}
-import go_api/timetable as go_timetable
+import gleam/option
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
-import lustre/event
 
 pub fn view(model: Model) -> Element(Message) {
   html.div([], [
@@ -26,27 +24,25 @@ pub fn view(model: Model) -> Element(Message) {
       ],
     ),
     html.main([attribute.class("p-4 min-h-svh")], [
-      html.div([], [
-        html.button([event.on_click(UserPressedFetch)], [
-          html.text("Fetch timetable"),
-        ]),
-      ]),
       form_view(model),
       html.section(
         [attribute.class("mt-4 sm:mt-6 md:mt-8")],
         timetable_view(model),
       ),
     ]),
+    html.h2(
+      [
+        attribute.class("text-4xl text-gray-200"),
+      ],
+      [html.text("Debug")],
+    ),
     html.pre(
       [
-        attribute.class("text-red-500"),
+        attribute.class("bg-gray-900 text-gray-200"),
         attribute.style("white-space", "pre-wrap"),
       ],
       [
-        html.text(case model.timetable {
-          Some(tt) -> tt |> go_timetable.to_json |> json.to_string
-          None -> "error"
-        }),
+        html.text(model |> model.model_to_json |> json.to_string),
       ],
     ),
     case model.error {

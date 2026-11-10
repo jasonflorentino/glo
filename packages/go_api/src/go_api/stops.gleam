@@ -447,6 +447,28 @@ pub fn get_sister_stops(stop: Stop) -> Option(List(Stop)) {
   stop |> get_line_stops |> option.map(remove_stop(_, stop))
 }
 
+/// Gets stop options for a from-to combo
+pub fn get_stop_options(from, to: Option(Stop)) -> Option(List(Stop)) {
+  case from, to {
+    Some(from), Some(to) -> {
+      let options = case to {
+        // Union is part of every line, need to get options for `from` instead
+        UnionStation -> get_line_stops(from)
+        // Else `to` is fine to use for options 
+        _ -> get_line_stops(to)
+      }
+      options |> option.map(remove_stop(_, from))
+    }
+    Some(from), None -> {
+      case from {
+        UnionStation -> Some(all())
+        _ -> get_sister_stops(from)
+      }
+    }
+    _, _ -> None
+  }
+}
+
 /// Compares Stops by name
 pub fn compare(a, b: Stop) -> order.Order {
   string.compare(to_name(a), to_name(b))

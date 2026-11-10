@@ -6,7 +6,7 @@ import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
 import go_api/destinations as go_destinations
-import go_api/stops.{WestHarbour}
+import go_api/stops
 import go_api/timetable as go_timetable
 import lustre/attribute
 import lustre/element
@@ -67,6 +67,9 @@ pub fn app_middleware(
 }
 
 pub fn handle_root(req: wisp.Request) -> wisp.Response {
+  // Handle explicit param input
+  // TODO: If only `from` is given and not `to`, do not fetch timetable and instead return "no results"
+  // TODO: If `from` and `to` are the same, do not fetch, return an error.
   let params = wisp.get_query(req)
   let from =
     params
@@ -74,8 +77,8 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
     |> option.from_result
   let to = params |> list.key_find("to") |> option.from_result
   let date = params |> list.key_find("date") |> option.from_result
-  // TODO: Don't fetch timetable if only `from` and not `to` is provided
 
+  // Timetable
   let result = go_trans.fetch_timetable(from, to, date)
   let timetable = case result {
     Ok(timetable) -> Some(timetable)
@@ -85,23 +88,21 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
     Ok(_) -> None
     Error(e) -> Some(e)
   }
+
+  // Pull fetched stops from the timetable
   let #(from_stop, to_stop) = case timetable {
     Some(timetable) -> {
       let from =
         stops.from_string(timetable.departure_stop_id)
         |> option.from_result
-        |> option.unwrap(WestHarbour)
       let to =
         stops.from_string(timetable.arrival_stop_id) |> option.from_result
       #(from, to)
     }
-    None -> #(WestHarbour, None)
+    None -> #(None, None)
   }
-  //TODO: consider from stop line if to stop is UN (don't put all stop options if line is determined from From
-  let to_stop_options = case from_stop, to_stop {
-    _, Some(to) -> stops.get_line_stops(to)
-    _, _ -> stops.get_sister_stops(from_stop)
-  }
+
+  let to_stop_options = stops.get_stop_options(from_stop, to_stop)
 
   let initial_state =
     model.Model(timetable:, from_stop:, to_stop:, to_stop_options:, error:)
