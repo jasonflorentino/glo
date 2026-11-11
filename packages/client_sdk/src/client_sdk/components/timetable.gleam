@@ -4,42 +4,58 @@ import common/util
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
+import gleam/time/calendar
+import gleam/time/timestamp
 import go_api/trip
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 
 pub fn timetable_view(model: Model) -> List(Element(Message)) {
-  case model.timetable {
-    Some(timetable) -> {
-      [
-        html.div([attribute.class("flex gap-2 items-baseline")], [
-          html.h2(
-            [
-              attribute.class(
-                "text-xl text-green-300 font-bold sm:text-2xl md:text-3xl",
-              ),
-            ],
-            [
-              html.text("Trips"),
-            ],
+  [
+    html.div([attribute.class("flex gap-2 items-baseline")], [
+      html.h2(
+        [
+          attribute.class(
+            "text-xl text-green-300 font-bold sm:text-2xl md:text-3xl",
           ),
-          html.span([attribute.class("ml-auto md:ml-0")], [
+        ],
+        [
+          html.text("Trips"),
+        ],
+      ),
+      html.span([attribute.class("ml-auto md:ml-0")], case model.timetable {
+        Some(timetable) -> {
+          let date_str = case timestamp.parse_rfc3339(timetable.date) {
+            Ok(date) -> {
+              let #(date, _time) =
+                date |> timestamp.to_calendar(calendar.local_offset())
+              util.to_day_date_str(date)
+            }
+            Error(_) -> "Unknown date"
+          }
+          [
             html.text(timetable.service_name),
             html.text(" – "),
-            html.text(timetable.date),
-          ]),
-        ]),
+            html.text(date_str),
+          ]
+        }
+        None -> [element.none()]
+      }),
+    ]),
+
+    case model.timetable {
+      Some(timetable) -> {
         html.div([attribute.class("mt-2")], [
           case !list.is_empty(timetable.trips) {
             True -> html.ol([], list.map(timetable.trips, trip_view))
             False -> html.p([], [html.text("No trips to show")])
           },
-        ]),
-      ]
-    }
-    None -> [html.div([], [html.text("No trips to show")])]
-  }
+        ])
+      }
+      None -> html.div([], [html.text("No trips to show")])
+    },
+  ]
 }
 
 fn trip_view(trip: trip.Trip) -> Element(Message) {
