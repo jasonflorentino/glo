@@ -1,5 +1,7 @@
+import common/util
 import gleam/dynamic/decode
 import gleam/json
+import gleam/time/timestamp.{type Timestamp}
 
 pub type Trip {
   Trip(
@@ -12,7 +14,7 @@ pub type Trip {
     // lines: List(Line),
 
     // 8601 utc datetime
-    order_time: String,
+    order_time: Timestamp,
     service_code: String,
     service_name: String,
     transfers: Int,
@@ -31,7 +33,7 @@ pub fn decoder_go() -> decode.Decoder(Trip) {
     decode.string,
   )
   use duration_minutes <- decode.field("durationMinutes", decode.int)
-  use order_time <- decode.field("orderTime", decode.string)
+  use order_time <- decode.field("orderTime", util.timestamp_decoder())
   use service_code <- decode.field("serviceCode", decode.string)
   use service_name <- decode.field("serviceName", decode.string)
   use transfers <- decode.field("transfers", decode.int)
@@ -59,7 +61,7 @@ pub fn decoder_json() -> decode.Decoder(Trip) {
     decode.string,
   )
   use duration_minutes <- decode.field("duration_minutes", decode.int)
-  use order_time <- decode.field("order_time", decode.string)
+  use order_time <- decode.field("order_time", util.timestamp_decoder())
   use service_code <- decode.field("service_code", decode.string)
   use service_name <- decode.field("service_name", decode.string)
   use transfers <- decode.field("transfers", decode.int)
@@ -91,7 +93,7 @@ pub fn to_json(trip: Trip) -> json.Json {
     #("arrival_time_display", json.string(arrival_time_display)),
     #("departure_time_display", json.string(departure_time_display)),
     #("duration_minutes", json.int(duration_minutes)),
-    #("order_time", json.string(order_time)),
+    #("order_time", util.timestamp_to_json(order_time)),
     #("service_code", json.string(service_code)),
     #("service_name", json.string(service_name)),
     #("transfers", json.int(transfers)),

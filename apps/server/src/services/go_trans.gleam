@@ -36,8 +36,10 @@ pub fn fetch_timetable(
   let date = date |> option.unwrap(or: get_default_date(now))
 
   let client = go_client.new(config)
+
   go_client.get_timetable(client, from, to, date)
   |> result.map(go_timetable.only_direct_train_trips)
+  |> result.map(go_timetable.only_recent_trios(_, timestamp.system_time()))
 }
 
 fn get_default_date(now: timestamp.Timestamp) -> String {

@@ -29,9 +29,6 @@ pub fn get_destinations(
   let endpoint = "/external/go/schedules/stops/" <> to <> "/destinations"
   let query = [#("Date", date)]
   let assert Ok(response) = send_req(client, endpoint, query)
-  echo "response start ----"
-  echo response
-  echo "response end ----"
   case destinations.parse(response.body) {
     Ok(destinations) -> Ok(destinations)
     Error(errors) -> Error(util.str_from_decode_errors(errors))

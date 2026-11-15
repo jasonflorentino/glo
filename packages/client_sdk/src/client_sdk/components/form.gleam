@@ -33,7 +33,7 @@ pub fn form_view(model: Model) -> Element(Message) {
           ],
           stops.all()
             |> list.map(stop_to_option(_, selected: model.from_stop))
-            |> with_empty_option(model.from_stop),
+            |> with_empty_option(model.from_stop, "Choose a stop"),
         ),
       ]),
 
@@ -60,7 +60,7 @@ pub fn form_view(model: Model) -> Element(Message) {
           model.to_stop_options
             |> option.then(fn(stop_options) {
               list.map(stop_options, stop_to_option(_, selected: model.to_stop))
-              |> with_empty_option(model.to_stop)
+              |> with_empty_option(model.to_stop, "Where to?")
               |> option.Some
             })
             |> option.unwrap([html.option([attribute.value("error")], "Error")]),
@@ -73,6 +73,7 @@ pub fn form_view(model: Model) -> Element(Message) {
 fn with_empty_option(
   options: List(Element(a)),
   selection: Option(Stop),
+  empty_label: String,
 ) -> List(Element(a)) {
   case selection {
     None -> [
@@ -83,7 +84,7 @@ fn with_empty_option(
           attribute.disabled(True),
           attribute.hidden(True),
         ],
-        "-- Choose a stop --",
+        empty_label,
       ),
       ..options
     ]

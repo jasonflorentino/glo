@@ -23,6 +23,7 @@ lustre_dev_tools = ">= 2.3.6 and < 3.0.0"
 [tools.lustre.build]
 minifi = true
 outdir = "../server/priv/static" 
+no_tailwind = true
 
 [tools.lustre.dev]
 host = "0.0.0.0"

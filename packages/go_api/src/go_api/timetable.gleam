@@ -1,6 +1,8 @@
+import common/util
 import gleam/dynamic/decode
 import gleam/json
 import gleam/list
+import gleam/time/timestamp
 import go_api/trip
 
 pub type Timetable {
@@ -88,4 +90,20 @@ pub fn only_direct_train_trips(timetable: Timetable) -> Timetable {
     trips: timetable.trips
       |> list.filter(fn(t) { trip.is_direct(t) && trip.is_rail(t) }),
   )
+}
+
+/// Assumes the timetable's trips are already ordered
+pub fn only_recent_trios(
+  timetable: Timetable,
+  now: timestamp.Timestamp,
+) -> Timetable {
+  let #(departed, upcoming) =
+    timetable.trips
+    |> list.partition(with: fn(t) { util.is_before(t.order_time, now) })
+  let most_recently_past = case departed |> list.reverse |> list.first {
+    Ok(trip) -> [trip]
+    Error(_) -> []
+  }
+
+  Timetable(..timetable, trips: list.append(most_recently_past, upcoming))
 }

@@ -1,24 +1,69 @@
 import gleam/dynamic/decode
+import gleam/float
 import gleam/int
+import gleam/json.{type Json}
 import gleam/list
+import gleam/order.{Eq, Gt, Lt}
 import gleam/string
 import gleam/time/calendar
-import gleam/time/timestamp
+import gleam/time/duration
+import gleam/time/timestamp.{type Timestamp}
 
-pub fn is_morning(now: timestamp.Timestamp) -> Bool {
+/// The UTC timestamps from GO transit's API aren't valid RFC3339 strings.
+/// They're missing the offset.
+/// Assume ET since GO trains only operate there.
+pub fn ensure_valid_rfc3339_str(s: String) -> String {
+  // 16200 is halfwaye between four and five hours in seconds
+  let offset = case
+    calendar.local_offset()
+    |> duration.to_seconds
+    |> float.absolute_value
+    |> float.compare(16_200.0)
+  {
+    Lt -> "-04:00"
+    Gt -> "-05:00"
+    Eq ->
+      panic as "local offset is actually halfway between four and five hours?"
+  }
+
+  case string.ends_with(s, "Z") {
+    True -> s
+    False -> s <> offset
+  }
+}
+
+pub fn is_before(a, b: Timestamp) -> Bool {
+  case timestamp.compare(a, b) {
+    Lt -> True
+    _ -> False
+  }
+}
+
+pub fn is_morning(now: Timestamp) -> Bool {
   let #(_, time) = timestamp.to_calendar(now, calendar.utc_offset)
   // Usually morning ET and not the day before
   !is_yesterday(now) && time.hours < 17
 }
 
-pub fn is_yesterday(now: timestamp.Timestamp) -> Bool {
+pub fn is_yesterday(now: Timestamp) -> Bool {
   let #(_, time) = timestamp.to_calendar(now, calendar.utc_offset)
   // We're still in the late-night of the day prior ET
   time.hours < 10
 }
 
+/// Honour the sign i guess
 pub fn pad_zero(digit: Int, to desired_length: Int) -> String {
-  int.to_string(digit) |> string.pad_start(desired_length, "0")
+  let pad = fn(n: Int) {
+    n |> int.to_string |> string.pad_start(desired_length, "0")
+  }
+
+  case digit < 0 {
+    False -> digit |> pad
+    True -> {
+      let s = digit |> int.absolute_value |> pad
+      "-" <> s
+    }
+  }
 }
 
 pub fn str_from_decode_errors(errors: List(decode.DecodeError)) -> String {
@@ -31,6 +76,19 @@ pub fn str_from_decode_errors(errors: List(decode.DecodeError)) -> String {
     )
   })
   |> string.join(", ")
+}
+
+pub fn timestamp_decoder() -> decode.Decoder(Timestamp) {
+  use raw <- decode.then(decode.string)
+  case raw |> ensure_valid_rfc3339_str |> timestamp.parse_rfc3339 {
+    Ok(ts) -> decode.success(ts)
+    Error(_) ->
+      decode.failure(timestamp.unix_epoch, expected: "RFC3339 timestamp")
+  }
+}
+
+pub fn timestamp_to_json(ts: Timestamp) -> Json {
+  ts |> timestamp.to_rfc3339(calendar.utc_offset) |> json.string
 }
 
 /// 1h23m

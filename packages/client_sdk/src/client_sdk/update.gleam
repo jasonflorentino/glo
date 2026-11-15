@@ -3,6 +3,7 @@ import client_sdk/messages.{
   ServerReturnedTimetable, UserChangedFrom, UserChangedTo, UserPressedFetch,
 }
 import client_sdk/model.{type Model, Model}
+import gleam/http/response
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/uri
@@ -184,7 +185,7 @@ fn string_from_rsvp_error(err: rsvp.Error(String)) -> String {
   case err {
     rsvp.BadBody -> "rsvp:BadBody"
     rsvp.BadUrl(str) -> "rsvp:BadUrl: " <> str
-    rsvp.HttpError(_) -> "rsvp:HttpError"
+    rsvp.HttpError(resp) -> "rsvp:HttpError: " <> resp.body
     rsvp.JsonError(_) -> "rsvp:JsonError"
     rsvp.NetworkError -> "rsvp:NetworkError "
     rsvp.UnhandledResponse(_) -> "rsvpUnhandledResponse"
