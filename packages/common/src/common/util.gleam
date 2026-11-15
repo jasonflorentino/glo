@@ -9,7 +9,7 @@ import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp.{type Timestamp}
 
-/// The UTC timestamps from GO transit's API aren't valid RFC3339 strings.
+/// The timestamps from GO transit's API aren't valid RFC3339 strings.
 /// They're missing the offset.
 /// Assume ET since GO trains only operate there.
 pub fn ensure_valid_rfc3339_str(s: String) -> String {

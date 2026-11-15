@@ -3,7 +3,6 @@ import client_sdk/messages.{
   ServerReturnedTimetable, UserChangedFrom, UserChangedTo, UserPressedFetch,
 }
 import client_sdk/model.{type Model, Model}
-import gleam/http/response
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/uri
