@@ -101,6 +101,17 @@ pub fn time_str_from_minutes(mins: Int) -> String {
   }
 }
 
+pub fn time_str_from_seconds(sec: Int) -> String {
+  // We only care about minute-precision
+  let h = sec / 60 / 60
+  let m = { sec / 60 } % 60
+  case h, m {
+    0, 0 -> "now"
+    0, _ -> int.to_string(m) <> "m"
+    _, _ -> int.to_string(h) <> "h" <> int.to_string(m) <> "m"
+  }
+}
+
 /// YYYY-MM-DD
 pub fn to_date_str(date: calendar.Date) -> String {
   let n2 = pad_zero(_, to: 2)

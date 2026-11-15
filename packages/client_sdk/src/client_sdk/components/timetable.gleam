@@ -1,10 +1,12 @@
 import client_sdk/messages.{type Message}
 import client_sdk/model.{type Model}
 import common/util
+import gleam/float
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
 import gleam/time/calendar
+import gleam/time/duration
 import gleam/time/timestamp
 import go_api/trip
 import lustre/attribute
@@ -59,16 +61,25 @@ pub fn timetable_view(model: Model) -> List(Element(Message)) {
 }
 
 fn trip_view(trip: trip.Trip) -> Element(Message) {
+  let is_past = util.is_before(trip.order_time, timestamp.system_time())
+  let departed = case is_past {
+    True -> "opacity-40"
+    False -> "opacity-100"
+  }
   html.li(
     [
       attribute.class(
-        "border-t border-green-100 grid grid-cols-7 sm:grid-cols-3 gap-2 pt-1 pb-5 departed",
+        "border-t border-green-100 grid grid-cols-7 sm:grid-cols-3 gap-2 pt-1 pb-5 "
+        <> departed,
       ),
     ],
     [
       html.div([attribute.class("flex flex-col col-span-3 sm:col-span-1")], [
         trip_heading("DEPARTS", "text-blue-200"),
-        trip_number(trip.departure_time_display),
+        html.div([attribute.class("flex gap-2 items-baseline")], [
+          trip_number(trip.departure_time_display),
+          trip_time_to_depart(trip),
+        ]),
       ]),
       html.div([attribute.class("flex flex-col col-span-3 sm:col-span-1")], [
         trip_heading("TRAVELS", "text-green-300"),
@@ -87,6 +98,26 @@ fn trip_view(trip: trip.Trip) -> Element(Message) {
       ),
     ],
   )
+}
+
+fn trip_time_to_depart(trip: trip.Trip) -> Element(Message) {
+  let is_past = util.is_before(trip.order_time, timestamp.system_time())
+  let animate = case is_past {
+    True -> "animate-none"
+    False -> "animate-pulse"
+  }
+  let content = case is_past {
+    True -> "(departed)"
+    False -> {
+      let diff = timestamp.difference(timestamp.system_time(), trip.order_time)
+      "("
+      <> util.time_str_from_seconds(float.round(duration.to_seconds(diff)))
+      <> ")"
+    }
+  }
+  html.span([attribute.class(animate)], [
+    html.text(content),
+  ])
 }
 
 fn trip_heading(text: String, color: String) -> Element(Message) {
