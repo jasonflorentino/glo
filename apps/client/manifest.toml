@@ -4,7 +4,7 @@
 packages = [
   { name = "argv", version = "1.1.0", build_tools = ["gleam"], requirements = [], otp_app = "argv", source = "hex", outer_checksum = "3277D100448BDB4A29B6D58C0F36F631CBC349E8BDD09766C6309DF202831140" },
   { name = "booklet", version = "1.1.0", build_tools = ["gleam"], requirements = [], otp_app = "booklet", source = "hex", outer_checksum = "08E0FDB78DC4D8A5D3C80295B021505C7D2A2E7B6C6D5EAB7286C36F4A53C851" },
-  { name = "client_sdk", version = "1.0.0", build_tools = ["gleam"], requirements = ["common", "gleam_json", "gleam_stdlib", "go_api", "lustre", "lustre_dev_tools", "modem", "rsvp"], source = "local", path = "../../packages/client_sdk" },
+  { name = "client_sdk", version = "1.0.0", build_tools = ["gleam"], requirements = ["common", "gleam_javascript", "gleam_json", "gleam_stdlib", "gleam_time", "go_api", "lustre", "lustre_dev_tools", "modem", "rsvp"], source = "local", path = "../../packages/client_sdk" },
   { name = "collie", version = "3.0.0", build_tools = ["gleam"], requirements = ["exception", "gleam_crypto", "gleam_erlang", "gleam_http", "gleam_otp", "gleam_stdlib", "logging", "websocks"], otp_app = "collie", source = "hex", outer_checksum = "A419EA772E07F5F71F327706DC318440525AF9E3249E915F7A76B3E3C25658D7" },
   { name = "common", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_json", "gleam_stdlib", "gleam_time", "lustre"], source = "local", path = "../../packages/common" },
   { name = "directories", version = "1.2.0", build_tools = ["gleam"], requirements = ["envoy", "gleam_stdlib", "platform", "simplifile"], otp_app = "directories", source = "hex", outer_checksum = "D13090CFCDF6759B87217E8DDD73A75903A700148A82C1D33799F333E249BF9E" },

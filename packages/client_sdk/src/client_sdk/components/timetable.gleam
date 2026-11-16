@@ -1,4 +1,4 @@
-import client_sdk/messages.{type Message}
+import client_sdk/messages.{type Message, UserClickedCopy}
 import client_sdk/model.{type Model}
 import common/util
 import gleam/float
@@ -8,10 +8,12 @@ import gleam/string
 import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp
+import go_api/stops.{WestHarbour}
 import go_api/trip
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
+import lustre/event
 
 pub fn timetable_view(model: Model) -> List(Element(Message)) {
   [
@@ -50,7 +52,7 @@ pub fn timetable_view(model: Model) -> List(Element(Message)) {
       Some(timetable) -> {
         html.div([attribute.class("mt-2")], [
           case !list.is_empty(timetable.trips) {
-            True -> html.ol([], list.map(timetable.trips, trip_view))
+            True -> html.ol([], list.map(timetable.trips, trip_view(model, _)))
             False -> html.p([], [html.text("No trips to show")])
           },
         ])
@@ -60,7 +62,7 @@ pub fn timetable_view(model: Model) -> List(Element(Message)) {
   ]
 }
 
-fn trip_view(trip: trip.Trip) -> Element(Message) {
+fn trip_view(model: model.Model, trip: trip.Trip) -> Element(Message) {
   let is_past = util.is_before(trip.order_time, timestamp.system_time())
   let departed = case is_past {
     True -> "opacity-40"
@@ -94,8 +96,48 @@ fn trip_view(trip: trip.Trip) -> Element(Message) {
         [
           trip_heading("ARRIVES", "text-red-200"),
           trip_number(trip.arrival_time_display),
+          trip_copy_btn(model, trip),
         ],
       ),
+    ],
+  )
+}
+
+fn trip_copy_btn(model: model.Model, trip: trip.Trip) -> Element(Message) {
+  // 17:47 from Union to Aldershot 18:56
+  let from_stop = option.unwrap(model.from_stop, WestHarbour) |> stops.to_name
+  let to_stop = option.unwrap(model.to_stop, WestHarbour) |> stops.to_name
+
+  let trip_text =
+    trip.departure_time_display
+    <> " from "
+    <> from_stop
+    <> " to "
+    <> to_stop
+    <> " "
+    <> trip.arrival_time_display
+
+  let id =
+    util.to_elem_id([
+      from_stop,
+      trip.departure_time_display,
+      to_stop,
+      trip.arrival_time_display,
+    ])
+
+  let text = case model.copied_elem_ids |> list.contains(id) {
+    True -> "Copied!"
+    False -> "Copy trip"
+  }
+
+  html.button(
+    [
+      attribute.id(id),
+      attribute.class("text-xs md:text-sm text-gray-400"),
+      event.on_click(UserClickedCopy(id:, text: trip_text)),
+    ],
+    [
+      html.text(text),
     ],
   )
 }

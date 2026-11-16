@@ -1,8 +1,10 @@
 import client_sdk/messages.{
-  type Message, ComputerUpdatedFrom, FetchTimetableError, RuntimeError,
-  ServerReturnedTimetable, UserChangedFrom, UserChangedTo, UserPressedFetch,
+  type Message, ComputerUpdatedFrom, CopyFeedbackWindowEnded,
+  FetchTimetableError, RuntimeError, ServerReturnedTimetable, UserChangedFrom,
+  UserChangedTo, UserClickedCopy, UserPressedFetch,
 }
 import client_sdk/model.{type Model, Model}
+import gleam/javascript/promise
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/uri
@@ -10,6 +12,8 @@ import go_api/stops.{type Stop, UnionStation}
 import go_api/timetable
 import lustre/effect.{type Effect}
 import modem
+import plinth/browser/clipboard
+import plinth/javascript/global
 import rsvp
 
 pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
@@ -19,8 +23,10 @@ pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
       Model(..model, from_stop:, to_stop:, to_stop_options:),
       effect.none(),
     )
+    CopyFeedbackWindowEnded(id) -> handle_copy_feedback_window_ended(model, id)
     UserChangedFrom(from) -> handle_user_changed_from(model, from)
     UserChangedTo(to) -> handle_user_changed_to(model, to)
+    UserClickedCopy(id, text) -> handle_user_clicked_copy(model, id, text)
     UserPressedFetch -> #(model, fetch_timetable())
     ServerReturnedTimetable(timetable) -> #(
       Model(..model, timetable: Some(timetable)),
@@ -32,6 +38,28 @@ pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
     )
     RuntimeError(msg) -> #(Model(..model, error: Some(msg)), effect.none())
   }
+}
+
+fn handle_copy_feedback_window_ended(
+  model: Model,
+  id: String,
+) -> #(Model, Effect(Message)) {
+  #(
+    Model(
+      ..model,
+      copied_elem_ids: list.filter(model.copied_elem_ids, fn(i) { i != id }),
+    ),
+    effect.none(),
+  )
+}
+
+fn handle_user_clicked_copy(
+  model: Model,
+  id: String,
+  text: String,
+) -> #(Model, Effect(Message)) {
+  let copy_effect = effect.from(copy_to_clipboard(_, id, text))
+  #(Model(..model, copied_elem_ids: [id, ..model.copied_elem_ids]), copy_effect)
 }
 
 fn handle_user_changed_from(
@@ -189,4 +217,17 @@ fn string_from_rsvp_error(err: rsvp.Error(String)) -> String {
     rsvp.NetworkError -> "rsvp:NetworkError "
     rsvp.UnhandledResponse(_) -> "rsvpUnhandledResponse"
   }
+}
+
+fn copy_to_clipboard(
+  dispatch: fn(Message) -> Nil,
+  id: String,
+  text: String,
+) -> Nil {
+  {
+    use _ <- promise.map(clipboard.write_text(text))
+    use <- global.set_timeout(1000)
+    dispatch(CopyFeedbackWindowEnded(id))
+  }
+  Nil
 }

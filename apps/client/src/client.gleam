@@ -1,6 +1,5 @@
 import client_sdk/messages.{type Message}
 import client_sdk/model.{type Model, Model, model_decoder, model_to_json}
-import client_sdk/update
 import client_sdk/view
 import gleam/json
 import gleam/option
@@ -9,6 +8,7 @@ import lustre
 import lustre/effect.{type Effect}
 import plinth/browser/document
 import plinth/browser/element as p_element
+import update
 
 pub fn main() -> Nil {
   let model_query_error =

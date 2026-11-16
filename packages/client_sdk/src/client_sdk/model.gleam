@@ -10,6 +10,7 @@ pub type Model {
     from_stop: Option(stops.Stop),
     to_stop: Option(stops.Stop),
     to_stop_options: Option(List(stops.Stop)),
+    copied_elem_ids: List(String),
     error: Option(String),
   )
 }
@@ -20,12 +21,20 @@ pub fn empty_state() {
     from_stop: Some(WestHarbour),
     to_stop: Some(UnionStation),
     to_stop_options: stops.get_sister_stops(WestHarbour),
+    copied_elem_ids: [],
     error: option.Some("empty"),
   )
 }
 
 pub fn model_to_json(model: Model) -> json.Json {
-  let Model(timetable:, from_stop:, to_stop:, to_stop_options:, error:) = model
+  let Model(
+    timetable:,
+    from_stop:,
+    to_stop:,
+    to_stop_options:,
+    copied_elem_ids:,
+    error:,
+  ) = model
   json.object([
     #("timetable", case timetable {
       option.None -> json.null()
@@ -37,6 +46,7 @@ pub fn model_to_json(model: Model) -> json.Json {
       "to_stop_options",
       json.nullable(to_stop_options, of: json.array(_, of: stops.to_json)),
     ),
+    #("copied_elem_ids", json.array(copied_elem_ids, json.string)),
     #("error", case error {
       option.None -> json.null()
       option.Some(value) -> json.string(value)
@@ -55,12 +65,17 @@ pub fn model_decoder() -> decode.Decoder(Model) {
     "to_stop_options",
     decode.optional(decode.list(stops.decoder())),
   )
+  use copied_elem_ids <- decode.field(
+    "copied_elem_ids",
+    decode.list(decode.string),
+  )
   use error <- decode.field("error", decode.optional(decode.string))
   decode.success(Model(
     timetable:,
     from_stop:,
     to_stop:,
     to_stop_options:,
+    copied_elem_ids:,
     error:,
   ))
 }

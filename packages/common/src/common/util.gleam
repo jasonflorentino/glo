@@ -140,6 +140,13 @@ pub fn to_day_date_str(date: calendar.Date) -> String {
   )
 }
 
+pub fn to_elem_id(strs: List(String)) -> String {
+  strs
+  |> list.flat_map(string.split(_, on: " "))
+  |> list.filter(fn(s) { !string.is_empty(s) })
+  |> string.join("-")
+}
+
 pub fn day_to_str(day: calendar.DayOfWeek, short short: Bool) -> String {
   let str = case day {
     calendar.Monday -> "Monday"

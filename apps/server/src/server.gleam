@@ -105,7 +105,14 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
   let to_stop_options = stops.get_stop_options(from_stop, to_stop)
 
   let initial_state =
-    model.Model(timetable:, from_stop:, to_stop:, to_stop_options:, error:)
+    model.Model(
+      ..model.empty_state(),
+      timetable:,
+      from_stop:,
+      to_stop:,
+      to_stop_options:,
+      error:,
+    )
 
   let html =
     html.html([attribute.lang("en")], [
