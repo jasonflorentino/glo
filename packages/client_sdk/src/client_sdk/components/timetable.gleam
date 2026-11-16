@@ -103,10 +103,18 @@ fn trip_view(model: model.Model, trip: trip.Trip) -> Element(Message) {
   )
 }
 
+fn clean_up(s: String) -> String {
+  s
+  |> string.split(on: " ")
+  |> list.filter(fn(s) { s != "GO" })
+  |> string.join(" ")
+}
+
 fn trip_copy_btn(model: model.Model, trip: trip.Trip) -> Element(Message) {
-  // 17:47 from Union to Aldershot 18:56
-  let from_stop = option.unwrap(model.from_stop, WestHarbour) |> stops.to_name
-  let to_stop = option.unwrap(model.to_stop, WestHarbour) |> stops.to_name
+  let from_stop =
+    option.unwrap(model.from_stop, WestHarbour) |> stops.to_name |> clean_up
+  let to_stop =
+    option.unwrap(model.to_stop, WestHarbour) |> stops.to_name |> clean_up
 
   let trip_text =
     trip.departure_time_display
@@ -133,7 +141,7 @@ fn trip_copy_btn(model: model.Model, trip: trip.Trip) -> Element(Message) {
   html.button(
     [
       attribute.id(id),
-      attribute.class("text-xs md:text-sm text-gray-400"),
+      attribute.class("text-xs md:text-sm text-gray-400 cursor-pointer"),
       event.on_click(UserClickedCopy(id:, text: trip_text)),
     ],
     [
