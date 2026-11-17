@@ -4,3 +4,9 @@
 @source "../../../packages/common/src";
 @source "../../../packages/client_sdk/src";
 @source "../../server/src";
+
+@layer base {
+    html {
+        font-family: "Overpass", system-ui, sans-serif;
+    }
+}

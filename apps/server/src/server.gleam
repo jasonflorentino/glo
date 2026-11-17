@@ -126,10 +126,30 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
           attribute.name("description"),
           attribute.content("See GO Train schedules quickly and easily"),
         ]),
-        html.title([], "App"),
+        html.title([], "GGTS"),
+        html.link([
+          attribute.rel("icon"),
+          attribute.href(
+            "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚆</text></svg>",
+          ),
+        ]),
         html.link([
           attribute.rel("stylesheet"),
           attribute.href("/static/client.css"),
+        ]),
+        html.link([
+          attribute.rel("preconnect"),
+          attribute.href("https://fonts.googleapis.com"),
+        ]),
+        html.link([
+          attribute.rel("preconnect"),
+          attribute.href("https://fonts.gstatic.com"),
+        ]),
+        html.link([
+          attribute.rel("stylesheet"),
+          attribute.href(
+            "https://fonts.googleapis.com/css2?family=Overpass:wght@100..900&display=swap",
+          ),
         ]),
         html.script(
           [attribute.type_("module"), attribute.src("/static/client.js")],
