@@ -1,9 +1,10 @@
-import common/util
 import gleam/option.{type Option}
 import gleam/result
 import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp
+
+import common/util
 import go_api/client as go_client
 import go_api/destinations as go_destinations
 import go_api/stops as go_stops

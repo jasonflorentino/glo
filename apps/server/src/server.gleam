@@ -1,20 +1,21 @@
-import client_sdk/model.{model_to_json}
-import client_sdk/view
 import gleam/erlang/process
 import gleam/http.{Get}
 import gleam/json
 import gleam/list
 import gleam/option.{None, Some}
-import go_api/destinations as go_destinations
-import go_api/stops
-import go_api/timetable as go_timetable
 import lustre/attribute
 import lustre/element
 import lustre/element/html
 import mist
-import services/go_trans
 import wisp
 import wisp/wisp_mist
+
+import client_sdk/model.{model_to_json}
+import client_sdk/view
+import go_api/destinations as go_destinations
+import go_api/stops
+import go_api/timetable as go_timetable
+import services/go_trans
 
 pub fn main() -> Nil {
   wisp.configure_logger()
@@ -68,8 +69,6 @@ pub fn app_middleware(
 
 pub fn handle_root(req: wisp.Request) -> wisp.Response {
   // Handle explicit param input
-  // TODO: If only `from` is given and not `to`, do not fetch timetable and instead return "no results"
-  // TODO: If `from` and `to` are the same, do not fetch, return an error.
   let params = wisp.get_query(req)
   let from =
     params
@@ -79,7 +78,18 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
   let date = params |> list.key_find("date") |> option.from_result
 
   // Timetable
-  let result = go_trans.fetch_timetable(from, to, date)
+  // TODO: Consider whether we want to continue letting `fetch_timetable` allow Options or instead
+  //       move the "default" stop logic up and out.
+  let result = case from, to {
+    None, None -> go_trans.fetch_timetable(from, to, date)
+    Some(from), Some(to) -> {
+      case from == to {
+        True -> Error("Expected to and from to be different")
+        False -> go_trans.fetch_timetable(Some(from), Some(to), date)
+      }
+    }
+    _, _ -> Error("Only one stop")
+  }
   let timetable = case result {
     Ok(timetable) -> Some(timetable)
     Error(_) -> None

@@ -1,6 +1,7 @@
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, Some}
+
 import go_api/stops.{UnionStation, WestHarbour}
 import go_api/timetable
 
