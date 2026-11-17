@@ -1,12 +1,13 @@
-import client_sdk/messages.{type Message, UserChangedFrom, UserChangedTo}
-import client_sdk/model.{type Model}
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import go_api/stops.{type Stop}
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+
+import client_sdk/messages.{type Message, UserChangedFrom, UserChangedTo}
+import client_sdk/model.{type Model}
+import go_api/stops.{type Stop}
 
 pub fn form_view(model: Model) -> Element(Message) {
   html.form([attribute.class("flex flex-col gap-4 mt-2 sm:mt-4 md:mt-6")], [

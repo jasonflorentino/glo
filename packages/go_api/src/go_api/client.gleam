@@ -1,9 +1,10 @@
-import common/util
 import gleam/http
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc
 import gleam/result
+
+import common/util
 import go_api/destinations
 import go_api/timetable
 

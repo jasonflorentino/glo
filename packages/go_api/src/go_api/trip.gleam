@@ -1,7 +1,8 @@
-import common/util
 import gleam/dynamic/decode
 import gleam/json
 import gleam/time/timestamp.{type Timestamp}
+
+import common/util
 
 pub type Trip {
   Trip(

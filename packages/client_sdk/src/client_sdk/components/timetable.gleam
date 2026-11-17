@@ -1,6 +1,3 @@
-import client_sdk/messages.{type Message, UserClickedCopy}
-import client_sdk/model.{type Model}
-import common/util
 import gleam/float
 import gleam/list
 import gleam/option.{None, Some}
@@ -8,12 +5,16 @@ import gleam/string
 import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp
-import go_api/stops.{WestHarbour}
-import go_api/trip
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+
+import client_sdk/messages.{type Message, UserClickedCopy}
+import client_sdk/model.{type Model}
+import common/util
+import go_api/stops.{WestHarbour}
+import go_api/trip
 
 pub fn timetable_view(model: Model) -> List(Element(Message)) {
   [

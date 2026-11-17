@@ -1,8 +1,9 @@
-import common/util
 import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/time/timestamp
+
+import common/util
 import go_api/trip
 
 pub type Timetable {

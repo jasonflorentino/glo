@@ -1,4 +1,5 @@
 import gleam/option
+
 import go_api/stops
 import go_api/timetable
 

@@ -1,6 +1,7 @@
 import gleam/dynamic/decode
 import gleam/json
 import gleam/list
+
 import go_api/transit_type
 
 pub type Destinations =

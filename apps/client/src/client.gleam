@@ -1,6 +1,3 @@
-import client_sdk/messages.{type Message}
-import client_sdk/model.{type Model, Model, model_decoder, model_to_json}
-import client_sdk/view
 import gleam/json
 import gleam/option
 import gleam/result
@@ -8,6 +5,10 @@ import lustre
 import lustre/effect.{type Effect}
 import plinth/browser/document
 import plinth/browser/element as p_element
+
+import client_sdk/messages.{type Message}
+import client_sdk/model.{type Model, Model, model_decoder, model_to_json}
+import client_sdk/view
 import update
 
 pub fn main() -> Nil {

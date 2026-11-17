@@ -1,13 +1,14 @@
-import client_sdk/components/footer_actions
-import client_sdk/components/form.{form_view}
-import client_sdk/components/timetable.{timetable_view}
-import client_sdk/messages.{type Message}
-import client_sdk/model.{type Model}
 import gleam/json
 import gleam/option
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
+
+import client_sdk/components/footer_actions
+import client_sdk/components/form.{form_view}
+import client_sdk/components/timetable.{timetable_view}
+import client_sdk/messages.{type Message}
+import client_sdk/model.{type Model}
 
 pub fn view(model: Model) -> Element(Message) {
   html.div([], [

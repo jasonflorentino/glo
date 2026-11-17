@@ -1,20 +1,21 @@
+import gleam/javascript/promise
+import gleam/list
+import gleam/option.{None, Some}
+import gleam/uri
+import lustre/effect.{type Effect}
+import modem
+import plinth/browser/clipboard
+import plinth/javascript/global
+import rsvp
+
 import client_sdk/messages.{
   type Message, ComputerUpdatedFrom, CopyFeedbackWindowEnded,
   FetchTimetableError, RuntimeError, ServerReturnedTimetable, UserChangedFrom,
   UserChangedTo, UserClickedCopy, UserPressedFetch,
 }
 import client_sdk/model.{type Model, Model}
-import gleam/javascript/promise
-import gleam/list
-import gleam/option.{None, Some}
-import gleam/uri
 import go_api/stops.{type Stop, UnionStation}
 import go_api/timetable
-import lustre/effect.{type Effect}
-import modem
-import plinth/browser/clipboard
-import plinth/javascript/global
-import rsvp
 
 pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
   echo message
