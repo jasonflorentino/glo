@@ -3,11 +3,20 @@ import gleam/float
 import gleam/int
 import gleam/json.{type Json}
 import gleam/list
+import gleam/option.{type Option, None, Some}
 import gleam/order.{Eq, Gt, Lt}
 import gleam/string
 import gleam/time/calendar
 import gleam/time/duration
 import gleam/time/timestamp.{type Timestamp}
+
+pub fn decode_optional_null(
+  field: String,
+  field_decoder: decode.Decoder(t),
+  next: fn(Option(t)) -> decode.Decoder(final),
+) -> decode.Decoder(final) {
+  decode.optional_field(field, None, decode.optional(field_decoder), next)
+}
 
 /// The timestamps from GO transit's API aren't valid RFC3339 strings.
 /// They're missing the offset.
@@ -49,6 +58,13 @@ pub fn is_yesterday(now: Timestamp) -> Bool {
   let #(_, time) = timestamp.to_calendar(now, calendar.utc_offset)
   // We're still in the late-night of the day prior ET
   time.hours < 10
+}
+
+pub fn nullable(value: Option(a), cb: fn(a) -> json.Json) -> json.Json {
+  case value {
+    None -> json.null()
+    Some(value) -> cb(value)
+  }
 }
 
 /// Honour the sign i guess

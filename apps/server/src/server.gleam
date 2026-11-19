@@ -114,6 +114,20 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
 
   let to_stop_options = stops.get_stop_options(from_stop, to_stop)
 
+  case from_stop {
+    Some(from) -> {
+      echo #("feting departures:", from)
+      let result = go_trans.fetch_depatures(from)
+      echo "result"
+      echo result
+      True
+    }
+    None -> {
+      echo "No from stop"
+      False
+    }
+  }
+
   let initial_state =
     model.Model(
       ..model.empty_state(),

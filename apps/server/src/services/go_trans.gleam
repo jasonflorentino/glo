@@ -6,11 +6,19 @@ import gleam/time/timestamp
 
 import common/util
 import go_api/client as go_client
+import go_api/departures as go_departures
 import go_api/destinations as go_destinations
 import go_api/stops as go_stops
 import go_api/timetable as go_timetable
 
 const config = go_client.Config(go_client.metrolinx_base, "")
+
+pub fn fetch_depatures(
+  from: go_stops.Stop,
+) -> Result(go_departures.Departures, String) {
+  let client = go_client.new(config)
+  go_client.get_departures(client, go_stops.to_code(from))
+}
 
 pub fn fetch_destinations(
   to: Option(String),

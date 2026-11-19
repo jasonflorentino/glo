@@ -5,6 +5,7 @@ import gleam/httpc
 import gleam/result
 
 import common/util
+import go_api/departures
 import go_api/destinations
 import go_api/timetable
 
@@ -20,6 +21,21 @@ pub type Client {
 
 pub fn new(config: Config) -> Client {
   Client(config)
+}
+
+pub fn get_departures(
+  client: Client,
+  from: String,
+) -> Result(departures.Departures, String) {
+  let endpoint =
+    "/external/go/departures/stops/" <> from <> "/status/departures"
+  let query = [#("page", "1"), #("transitTypeName", "All"), #("pageLimit", "5")]
+  let assert Ok(response) = send_req(client, endpoint, query)
+  echo #("body", response.body)
+  case departures.parse(response.body) {
+    Ok(departures) -> Ok(departures)
+    Error(errors) -> Error(util.str_from_decode_errors(errors))
+  }
 }
 
 pub fn get_destinations(
