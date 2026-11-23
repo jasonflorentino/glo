@@ -200,3 +200,10 @@ pub fn month_to_str(month: calendar.Month, short short: Bool) -> String {
     False -> str
   }
 }
+
+pub fn with_unwrap(res: Result(a, _), or default: b, cb cb: fn(a) -> b) -> b {
+  case res {
+    Error(_) -> default
+    Ok(val) -> cb(val)
+  }
+}

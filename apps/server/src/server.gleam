@@ -1,3 +1,4 @@
+import common/util
 import gleam/erlang/process
 import gleam/http.{Get}
 import gleam/json
@@ -12,6 +13,7 @@ import wisp/wisp_mist
 
 import client_sdk/model.{model_to_json}
 import client_sdk/view
+import go_api/departures as go_departures
 import go_api/destinations as go_destinations
 import go_api/stops
 import go_api/timetable as go_timetable
@@ -114,17 +116,20 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
 
   let to_stop_options = stops.get_stop_options(from_stop, to_stop)
 
-  case from_stop {
+  let timetable = case from_stop {
     Some(from) -> {
-      echo #("fetching departures: ", from)
-      let result = go_trans.fetch_depatures(from)
-      echo #("result: ", result)
-      True
+      use departures <- util.with_unwrap(
+        go_trans.fetch_depatures(from),
+        or: timetable,
+      )
+      let dep_map = go_departures.to_departure_map(departures)
+      case timetable {
+        Some(timetable) ->
+          timetable |> go_timetable.enrich_with_departures(dep_map) |> Some
+        None -> timetable
+      }
     }
-    None -> {
-      echo "No from stop"
-      False
-    }
+    None -> timetable
   }
 
   let initial_state =

@@ -1,6 +1,8 @@
+import gleam/dict.{type Dict}
 import gleam/dynamic/decode
 import gleam/json
-import gleam/option.{type Option}
+import gleam/list
+import gleam/option.{type Option, None, Some}
 
 import common/util.{decode_optional_null, nullable}
 
@@ -13,9 +15,9 @@ pub fn parse(data: BitArray) -> Result(Departures, List(decode.DecodeError)) {
 pub type Departures {
   Departures(
     station_code: String,
-    all_departures: Option(TransitDepartures),
-    train_departures: Option(TransitDepartures),
-    bus_departures: Option(TransitDepartures),
+    all_departures: Option(DeparturesPage),
+    train_departures: Option(DeparturesPage),
+    bus_departures: Option(DeparturesPage),
   )
 }
 
@@ -28,12 +30,9 @@ pub fn departures_to_json(departures: Departures) -> json.Json {
   ) = departures
   json.object([
     #("station_code", json.string(station_code)),
-    #("all_departures", nullable(all_departures, transit_departures_to_json)),
-    #(
-      "train_departures",
-      nullable(train_departures, transit_departures_to_json),
-    ),
-    #("bus_departures", nullable(bus_departures, transit_departures_to_json)),
+    #("all_departures", nullable(all_departures, departures_page_to_json)),
+    #("train_departures", nullable(train_departures, departures_page_to_json)),
+    #("bus_departures", nullable(bus_departures, departures_page_to_json)),
   ])
 }
 
@@ -41,15 +40,15 @@ pub fn departures_decoder() -> decode.Decoder(Departures) {
   use station_code <- decode.field("station_code", decode.string)
   use all_departures <- decode_optional_null(
     "all_departures",
-    transit_departures_decoder(),
+    departures_page_decoder(),
   )
   use train_departures <- decode_optional_null(
     "train_departures",
-    transit_departures_decoder(),
+    departures_page_decoder(),
   )
   use bus_departures <- decode_optional_null(
     "bus_departures",
-    transit_departures_decoder(),
+    departures_page_decoder(),
   )
   decode.success(Departures(
     station_code:,
@@ -63,15 +62,15 @@ pub fn departures_decoder_go() -> decode.Decoder(Departures) {
   use station_code <- decode.field("stationCode", decode.string)
   use all_departures <- decode_optional_null(
     "allDepartures",
-    transit_departures_decoder_go(),
+    departures_page_decoder_go(),
   )
   use train_departures <- decode_optional_null(
     "trainDepartures",
-    transit_departures_decoder_go(),
+    departures_page_decoder_go(),
   )
   use bus_departures <- decode_optional_null(
     "busDepartures",
-    transit_departures_decoder_go(),
+    departures_page_decoder_go(),
   )
   decode.success(Departures(
     station_code:,
@@ -81,8 +80,8 @@ pub fn departures_decoder_go() -> decode.Decoder(Departures) {
   ))
 }
 
-pub type TransitDepartures {
-  TransitDepartures(
+pub type DeparturesPage {
+  DeparturesPage(
     items: List(Departure),
     page: Int,
     page_size: Int,
@@ -90,10 +89,8 @@ pub type TransitDepartures {
   )
 }
 
-pub fn transit_departures_to_json(
-  departures_page: TransitDepartures,
-) -> json.Json {
-  let TransitDepartures(items:, page:, page_size:, total_item_count:) =
+pub fn departures_page_to_json(departures_page: DeparturesPage) -> json.Json {
+  let DeparturesPage(items:, page:, page_size:, total_item_count:) =
     departures_page
   json.object([
     #("items", json.array(items, departure_to_json)),
@@ -103,20 +100,20 @@ pub fn transit_departures_to_json(
   ])
 }
 
-pub fn transit_departures_decoder() -> decode.Decoder(TransitDepartures) {
+pub fn departures_page_decoder() -> decode.Decoder(DeparturesPage) {
   use items <- decode.field("items", decode.list(departure_decoder()))
   use page <- decode.field("page", decode.int)
   use page_size <- decode.field("page_size", decode.int)
   use total_item_count <- decode.field("total_item_count", decode.int)
-  decode.success(TransitDepartures(items:, page:, page_size:, total_item_count:))
+  decode.success(DeparturesPage(items:, page:, page_size:, total_item_count:))
 }
 
-pub fn transit_departures_decoder_go() -> decode.Decoder(TransitDepartures) {
+pub fn departures_page_decoder_go() -> decode.Decoder(DeparturesPage) {
   use items <- decode.field("items", decode.list(departure_decoder_go()))
   use page <- decode.field("page", decode.int)
   use page_size <- decode.field("pageSize", decode.int)
   use total_item_count <- decode.field("totalItemCount", decode.int)
-  decode.success(TransitDepartures(items:, page:, page_size:, total_item_count:))
+  decode.success(DeparturesPage(items:, page:, page_size:, total_item_count:))
 }
 
 pub type Departure {
@@ -421,4 +418,15 @@ pub fn departure_detail_decoder_go() -> decode.Decoder(DepartureDetail) {
     stop_code:,
     is_major_stop:,
   ))
+}
+
+/// Map of trip_number -> Departure
+pub fn to_departure_map(departures: Departures) -> Dict(String, Departure) {
+  case departures.all_departures {
+    None -> dict.new()
+    Some(departures_page) -> {
+      list.map(departures_page.items, fn(d) { #(d.trip_number, d) })
+      |> dict.from_list
+    }
+  }
 }

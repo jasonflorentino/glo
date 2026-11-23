@@ -61,6 +61,7 @@ pub fn get_timetable(
   let endpoint = "/external/go/schedules/en/timetable/all"
   let query = [#("fromStop", from), #("toStop", to), #("date", date)]
   let assert Ok(response) = send_req(client, endpoint, query)
+  echo #("timetable body", response.body)
   case timetable.parse(response.body) {
     Ok(timetable) -> Ok(timetable)
     Error(errors) -> Error(util.str_from_decode_errors(errors))
