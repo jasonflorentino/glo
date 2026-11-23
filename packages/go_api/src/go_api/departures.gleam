@@ -124,6 +124,7 @@ pub type Departure {
     all_departure_stops: Option(AllDepartureStops),
     delayed_departure_time: Option(String),
     delay_message: Option(String),
+    // May be negative
     delay_seconds: Option(Int),
     gate: Option(String),
     // "Proceed / Avncez"
@@ -375,7 +376,7 @@ pub type DepartureDetail {
     // "West Harbour GO"
     stop_name: String,
     // "19:24"
-    depature_time: String,
+    departure_time: Option(String),
     // "WR"
     stop_code: String,
     // true
@@ -386,11 +387,11 @@ pub type DepartureDetail {
 pub fn departure_detail_to_json(
   departure_detail: DepartureDetail,
 ) -> json.Json {
-  let DepartureDetail(stop_name:, depature_time:, stop_code:, is_major_stop:) =
+  let DepartureDetail(stop_name:, departure_time:, stop_code:, is_major_stop:) =
     departure_detail
   json.object([
     #("stop_name", json.string(stop_name)),
-    #("depature_time", json.string(depature_time)),
+    #("depature_time", nullable(departure_time, json.string)),
     #("stop_code", json.string(stop_code)),
     #("is_major_stop", json.bool(is_major_stop)),
   ])
@@ -398,12 +399,12 @@ pub fn departure_detail_to_json(
 
 pub fn departure_detail_decoder() -> decode.Decoder(DepartureDetail) {
   use stop_name <- decode.field("stop_name", decode.string)
-  use depature_time <- decode.field("depature_time", decode.string)
+  use departure_time <- decode_optional_null("departure_time", decode.string)
   use stop_code <- decode.field("stop_code", decode.string)
   use is_major_stop <- decode.field("is_major_stop", decode.bool)
   decode.success(DepartureDetail(
     stop_name:,
-    depature_time:,
+    departure_time:,
     stop_code:,
     is_major_stop:,
   ))
@@ -411,12 +412,12 @@ pub fn departure_detail_decoder() -> decode.Decoder(DepartureDetail) {
 
 pub fn departure_detail_decoder_go() -> decode.Decoder(DepartureDetail) {
   use stop_name <- decode.field("stopName", decode.string)
-  use depature_time <- decode.field("depatureTime", decode.string)
+  use departure_time <- decode_optional_null("departureTime", decode.string)
   use stop_code <- decode.field("stopCode", decode.string)
   use is_major_stop <- decode.field("isMajorStop", decode.bool)
   decode.success(DepartureDetail(
     stop_name:,
-    depature_time:,
+    departure_time:,
     stop_code:,
     is_major_stop:,
   ))

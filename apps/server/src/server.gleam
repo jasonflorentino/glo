@@ -116,10 +116,9 @@ pub fn handle_root(req: wisp.Request) -> wisp.Response {
 
   case from_stop {
     Some(from) -> {
-      echo #("feting departures:", from)
+      echo #("fetching departures: ", from)
       let result = go_trans.fetch_depatures(from)
-      echo "result"
-      echo result
+      echo #("result: ", result)
       True
     }
     None -> {
