@@ -22,22 +22,23 @@ pub fn decode_optional_null(
 /// They're missing the offset.
 /// Assume ET since GO trains only operate there.
 pub fn ensure_valid_rfc3339_str(s: String) -> String {
-  // 16200 is halfwaye between four and five hours in seconds
-  let offset = case
-    calendar.local_offset()
-    |> duration.to_seconds
-    |> float.absolute_value
-    |> float.compare(16_200.0)
-  {
-    Lt -> "-04:00"
-    Gt -> "-05:00"
-    Eq ->
-      panic as "local offset is actually halfway between four and five hours?"
-  }
-
   case string.ends_with(s, "Z") {
     True -> s
-    False -> s <> offset
+    False -> {
+      // 16200 is halfwaye between four and five hours in seconds
+      let offset = case
+        calendar.local_offset()
+        |> duration.to_seconds
+        |> float.absolute_value
+        |> float.compare(16_200.0)
+      {
+        Lt -> "-04:00"
+        Gt -> "-05:00"
+        Eq ->
+          panic as "local offset is actually halfway between four and five hours?"
+      }
+      s <> offset
+    }
   }
 }
 

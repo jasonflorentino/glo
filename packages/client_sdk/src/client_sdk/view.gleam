@@ -6,6 +6,7 @@ import lustre/element/html
 
 import client_sdk/components/footer_actions
 import client_sdk/components/form.{form_view}
+import client_sdk/components/page_footer.{page_footer}
 import client_sdk/components/timetable.{timetable_view}
 import client_sdk/messages.{type Message}
 import client_sdk/model.{type Model}
@@ -33,6 +34,7 @@ pub fn view(model: Model) -> Element(Message) {
       ),
       footer_actions.footer_actions(model),
     ]),
+    page_footer(),
     html.h2(
       [
         attribute.class("text-4xl text-gray-200"),
@@ -43,6 +45,7 @@ pub fn view(model: Model) -> Element(Message) {
       [
         attribute.class("bg-gray-900 text-gray-200"),
         attribute.style("white-space", "pre-wrap"),
+        attribute.style("overflow-wrap", "break-word"),
       ],
       [
         html.text(model |> model.model_to_json |> json.to_string),
