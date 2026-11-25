@@ -1,6 +1,6 @@
 import gleam/javascript/promise
 import gleam/list
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
 import gleam/uri
 import lustre/effect.{type Effect}
 import modem
@@ -41,6 +41,12 @@ pub fn update(model: Model, message: Message) -> #(Model, Effect(Message)) {
   }
 }
 
+type UpdateHandler =
+  fn() -> #(Model, Effect(Message))
+
+type UpdateHandler1(a) =
+  fn(a) -> #(Model, Effect(Message))
+
 fn handle_copy_feedback_window_ended(
   model: Model,
   id: String,
@@ -68,68 +74,63 @@ fn handle_user_changed_from(
   from: String,
 ) -> #(Model, Effect(Message)) {
   let from = stops.from_string(from)
+  use from_stop <- with_parsed_stop(from, model)
 
-  case from {
-    Error(msg) -> set_error(model, msg)
-    Ok(from_stop) -> {
-      let to_stop_options =
-        from_stop
-        |> stops.get_sister_stops
-        |> option.map(list.sort(_, stops.compare))
+  let to_stop_options =
+    from_stop
+    |> stops.get_sister_stops
+    |> option.map(list.sort(_, stops.compare))
 
-      case model.from_stop {
-        // No existing FROM: write in options with no TO
-        None -> {
-          #(
-            Model(
-              ..model,
-              timetable: None,
-              from_stop: Some(from_stop),
-              to_stop: None,
-              to_stop_options:,
-            ),
-            effect.none(),
-          )
-        }
-        // FROM already exists
-        Some(curr_from) -> {
-          case from_stop == curr_from {
-            True -> noop(model)
-            False -> {
-              let keep_current_to = case
-                from_stop,
-                to_stop_options,
-                model.to_stop
-              {
-                UnionStation, _, _ -> False
-                _, Some(line), Some(to) ->
-                  stops.line_has_stop(line, to) && to != UnionStation
-                _, _, _ -> False
-              }
-              // TODO: fetch if route is changed!
-              let to_stop = case keep_current_to {
-                True -> model.to_stop
-                False -> None
-              }
-              #(
-                Model(
-                  ..model,
-                  timetable: None,
-                  from_stop: Some(from_stop),
-                  to_stop:,
-                  to_stop_options:,
-                ),
-                effect.none(),
-              )
-            }
-          }
-        }
+  case model.from_stop {
+    // No existing FROM: write in options with no TO
+    None -> {
+      #(
+        Model(
+          ..model,
+          timetable: None,
+          from_stop: Some(from_stop),
+          to_stop: None,
+          to_stop_options:,
+        ),
+        modem.replace("/", Some(query_string_from_stops(from_stop, None)), None),
+      )
+    }
+    // FROM already exists
+    Some(curr_from) -> {
+      use <- when_from_stop_changed(from_stop != curr_from, model)
+      let keep_current_to = case from_stop, to_stop_options, model.to_stop {
+        UnionStation, _, _ -> False
+        _, Some(line), Some(to) ->
+          stops.line_has_stop(line, to) && to != UnionStation
+        _, _, _ -> False
       }
+      // TODO: fetch if route is changed!
+      let to_stop = case keep_current_to {
+        True -> model.to_stop
+        False -> None
+      }
+      #(
+        Model(
+          ..model,
+          timetable: None,
+          from_stop: Some(from_stop),
+          to_stop:,
+          to_stop_options:,
+        ),
+        modem.replace(
+          "/",
+          Some(query_string_from_stops(from_stop, to_stop)),
+          None,
+        ),
+      )
     }
   }
 }
 
-fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message)) {
+fn handle_user_changed_to(
+  model: Model,
+  to: String,
+) -> #(Model, Effect(Message)) {
   let to = stops.from_string(to)
   case to {
     Error(msg) -> set_error(model, msg)
@@ -169,12 +170,16 @@ fn handle_user_changed_to(model: Model, to: String) -> #(Model, Effect(Message))
   }
 }
 
+fn query_string_from_stops(from: Stop, to: Option(Stop)) -> String {
+  let from_pair = #("from", from |> stops.to_code)
+  case to {
+    None -> uri.query_to_string([from_pair])
+    Some(to) -> uri.query_to_string([from_pair, #("to", to |> stops.to_code)])
+  }
+}
+
 fn handle_user_changed_to_fetch(from: Stop, to: Stop) -> Effect(Message) {
-  let query_string =
-    uri.query_to_string([
-      #("from", from |> stops.to_code),
-      #("to", to |> stops.to_code),
-    ])
+  let query_string = query_string_from_stops(from, Some(to))
   effect.batch([
     modem.push("/", Some(query_string), None),
     rsvp.get(
@@ -231,4 +236,22 @@ fn copy_to_clipboard(
     dispatch(CopyFeedbackWindowEnded(id))
   }
   Nil
+}
+
+fn with_parsed_stop(
+  stop: Result(Stop, String),
+  model: Model,
+  cb: UpdateHandler1(Stop),
+) {
+  case stop {
+    Error(msg) -> set_error(model, msg)
+    Ok(stop) -> cb(stop)
+  }
+}
+
+fn when_from_stop_changed(is_changed: Bool, model: Model, cb: UpdateHandler) {
+  case is_changed {
+    False -> noop(model)
+    True -> cb()
+  }
 }

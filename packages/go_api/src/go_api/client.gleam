@@ -29,9 +29,14 @@ pub fn get_departures(
 ) -> Result(departures.Departures, String) {
   let endpoint =
     "/external/go/departures/stops/" <> from <> "/status/departures"
-  let query = [#("page", "1"), #("transitTypeName", "All"), #("pageLimit", "5")]
+  let query = [
+    #("page", "1"),
+    // Their API seems to ignore other types 
+    #("transitTypeName", "All"),
+    #("pageLimit", "20"),
+  ]
   let assert Ok(response) = send_req(client, endpoint, query)
-  echo #("body", response.body)
+  echo #("departures body", response.body)
   case departures.parse(response.body) {
     Ok(departures) -> Ok(departures)
     Error(errors) -> Error(util.str_from_decode_errors(errors))
@@ -46,6 +51,7 @@ pub fn get_destinations(
   let endpoint = "/external/go/schedules/stops/" <> to <> "/destinations"
   let query = [#("Date", date)]
   let assert Ok(response) = send_req(client, endpoint, query)
+  echo #("destinations body", response.body)
   case destinations.parse(response.body) {
     Ok(destinations) -> Ok(destinations)
     Error(errors) -> Error(util.str_from_decode_errors(errors))

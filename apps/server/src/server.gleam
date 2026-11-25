@@ -3,7 +3,7 @@ import gleam/erlang/process
 import gleam/http.{Get}
 import gleam/json
 import gleam/list
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
 import lustre/attribute
 import lustre/element
 import lustre/element/html
@@ -15,7 +15,7 @@ import client_sdk/model.{model_to_json}
 import client_sdk/view
 import go_api/departures as go_departures
 import go_api/destinations as go_destinations
-import go_api/stops
+import go_api/stops.{type Stop}
 import go_api/timetable as go_timetable
 import services/go_trans
 
@@ -244,9 +244,26 @@ pub fn handle_timetable(req: wisp.Request) -> wisp.Response {
     |> option.from_result
   let to = params |> list.key_find("to") |> option.from_result
   let date = params |> list.key_find("date") |> option.from_result
-  let result = go_trans.fetch_timetable(from, to, date)
 
-  case result {
+  use from <- required_param("from", from)
+  use from_stop <- parsed_stop(from)
+
+  let timetable = go_trans.fetch_timetable(Some(from), to, date)
+
+  let timetable = {
+    use departures <- util.with_unwrap(
+      go_trans.fetch_depatures(from_stop),
+      or: timetable,
+    )
+    let dep_map = go_departures.to_departure_map(departures)
+    case timetable {
+      Ok(timetable) ->
+        timetable |> go_timetable.enrich_with_departures(dep_map) |> Ok
+      Error(_) -> timetable
+    }
+  }
+
+  case timetable {
     Ok(api_res) -> {
       wisp.ok()
       |> wisp.json_body(json.to_string(go_timetable.to_json(api_res)))
@@ -255,5 +272,24 @@ pub fn handle_timetable(req: wisp.Request) -> wisp.Response {
       wisp.internal_server_error()
       |> wisp.json_body(msg)
     }
+  }
+}
+
+fn required_param(
+  name: String,
+  val: Option(String),
+  cb: fn(String) -> wisp.Response,
+) {
+  case val {
+    None -> wisp.bad_request("Missing required param: " <> name)
+    Some(val) -> cb(val)
+  }
+}
+
+fn parsed_stop(maybe_stop: String, cb: fn(Stop) -> wisp.Response) {
+  let stop = stops.from_string(maybe_stop)
+  case stop {
+    Error(_) -> wisp.bad_request("Expected stop, got: " <> maybe_stop)
+    Ok(stop) -> cb(stop)
   }
 }
