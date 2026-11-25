@@ -22,7 +22,7 @@ pub fn view(model: Model) -> Element(Message) {
               "text-2xl pt-1 text-green-100 font-bold sm:text-3xl md:text-4xl",
             ),
           ],
-          [html.text("🚆 Glo Train Schedule")],
+          [html.text("🚆 GloTrainSchedule")],
         ),
       ],
     ),

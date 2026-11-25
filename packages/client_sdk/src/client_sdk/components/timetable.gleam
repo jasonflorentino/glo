@@ -83,8 +83,9 @@ fn trip_view(model: model.Model, trip: trip.Trip) -> Element(Message) {
           trip_number(trip.departure_time_display),
           trip_time_to_depart(trip),
         ]),
+        trip_platform(trip),
       ]),
-      html.div([attribute.class("flex flex-col col-span-3 sm:col-span-1")], [
+      html.div([attribute.class("flex flex-col col-span-2 sm:col-span-1")], [
         trip_heading("TRAVELS", "text-green-300"),
         trip_number(util.time_str_from_minutes(trip.duration_minutes)),
       ]),
@@ -187,4 +188,21 @@ fn trip_number(text: String) -> Element(Message) {
   html.span([attribute.class("text-xl font-medium sm:text-2xl md:text-3xl")], [
     html.text(text),
   ])
+}
+
+fn trip_platform(trip: trip.Trip) -> Element(Message) {
+  case trip.x_platform {
+    Some(platform) ->
+      html.div(
+        [
+          attribute.class(
+            "w-fit text-xs md:text-sm text-blue-100 bg-blue-500 uppercase font-medium px-2 pt-0.5 pb-0 rounded",
+          ),
+        ],
+        [
+          html.text(platform),
+        ],
+      )
+    None -> element.none()
+  }
 }
