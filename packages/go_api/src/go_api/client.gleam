@@ -1,8 +1,14 @@
+import gleam/bit_array
 import gleam/http
-import gleam/http/request
-import gleam/http/response
+import gleam/http/request.{type Request}
+import gleam/http/response.{type Response}
 import gleam/httpc
 import gleam/result
+import gleam/string
+import gleam/time/duration
+import gleam/time/timestamp.{type Timestamp}
+import gleam/uri
+import palabres
 
 import common/util
 import go_api/departures
@@ -36,7 +42,6 @@ pub fn get_departures(
     #("pageLimit", "20"),
   ]
   let assert Ok(response) = send_req(client, endpoint, query)
-  echo #("departures body", response.body)
   case departures.parse(response.body) {
     Ok(departures) -> Ok(departures)
     Error(errors) -> Error(util.str_from_decode_errors(errors))
@@ -51,7 +56,6 @@ pub fn get_destinations(
   let endpoint = "/external/go/schedules/stops/" <> to <> "/destinations"
   let query = [#("Date", date)]
   let assert Ok(response) = send_req(client, endpoint, query)
-  echo #("destinations body", response.body)
   case destinations.parse(response.body) {
     Ok(destinations) -> Ok(destinations)
     Error(errors) -> Error(util.str_from_decode_errors(errors))
@@ -67,7 +71,6 @@ pub fn get_timetable(
   let endpoint = "/external/go/schedules/en/timetable/all"
   let query = [#("fromStop", from), #("toStop", to), #("date", date)]
   let assert Ok(response) = send_req(client, endpoint, query)
-  echo #("timetable body", response.body)
   case timetable.parse(response.body) {
     Ok(timetable) -> Ok(timetable)
     Error(errors) -> Error(util.str_from_decode_errors(errors))
@@ -100,6 +103,9 @@ fn send_req(
     |> request.set_method(http.Get)
     |> request.set_body(<<>>)
 
+  log_request(req)
+  let start = timestamp.system_time()
+
   let resp_with_err =
     result.try_recover(httpc.send_bits(req), normalize_httpc_error)
   use resp <- result.try(resp_with_err)
@@ -112,8 +118,8 @@ fn send_req(
   let content_encoding = get_content_encoding(resp)
 
   case content_encoding {
-    Ok("gzip") -> handle_gzip(resp)
-    Ok(_) -> handle_uncompressed(resp)
+    Ok("gzip") -> handle_gzip(resp) |> log_response(start)
+    Ok(_) -> handle_uncompressed(resp) |> log_response(start)
     Error(msg) -> Error(msg)
   }
 }
@@ -126,9 +132,7 @@ fn normalize_httpc_error(e: httpc.HttpError) -> Result(a, String) {
   }
 }
 
-fn handle_gzip(
-  res: response.Response(BitArray),
-) -> Result(response.Response(BitArray), String) {
+fn handle_gzip(res: Response(BitArray)) -> Result(Response(BitArray), String) {
   use decompressed <- result.try(gunzip(res.body))
   Ok(response.set_body(res, decompressed))
 }
@@ -137,6 +141,54 @@ fn handle_uncompressed(
   res: response.Response(BitArray),
 ) -> Result(response.Response(BitArray), String) {
   Ok(res)
+}
+
+pub fn log_request(req: Request(BitArray)) {
+  palabres.info("Request")
+  |> palabres.string("path", req |> request.to_uri |> uri.to_string)
+  |> palabres.log
+}
+
+pub fn log_response(
+  res: Result(Response(BitArray), String),
+  start: Timestamp,
+) -> Result(Response(BitArray), String) {
+  case res {
+    Ok(resp) -> {
+      let str_from_body = fn(body: BitArray) {
+        case bit_array.to_string(body) {
+          Ok(text) -> text
+          Error(_) -> string.inspect(body)
+        }
+      }
+
+      palabres.info("Response")
+      |> palabres.int("status", resp.status)
+      |> palabres.lazy(fn(log) {
+        log
+        |> palabres.int(
+          "duration_ms",
+          timestamp.difference(start, timestamp.system_time())
+            |> duration.to_milliseconds,
+        )
+      })
+      |> palabres.log
+
+      palabres.debug("Response body")
+      |> palabres.lazy(fn(log) {
+        log
+        |> palabres.string("body", str_from_body(resp.body))
+      })
+      |> palabres.log
+    }
+    Error(err) -> {
+      palabres.error("Request failed")
+      |> palabres.string("reason", err)
+      |> palabres.log
+    }
+  }
+
+  res
 }
 
 @external(erlang, "zlib_bridge", "gunzip")

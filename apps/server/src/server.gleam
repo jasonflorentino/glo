@@ -25,7 +25,7 @@ import go_api/timetable as go_timetable
 import services/go_trans
 
 pub fn main() -> Nil {
-  wisp.configure_logger()
+  configure_logger()
 
   let secret_key_base = wisp.random_string(64)
 
@@ -304,9 +304,8 @@ pub fn configure_logger() {
   options.defaults()
   |> options.color(True)
   |> options.json(False)
-  // The minimum log level. Defaults to `level.Info`, which means `debug`
-  // logs are dropped unless you lower it, like here.
-  |> options.level(level.Debug)
+  // |> options.level(level.Debug)
+  |> options.auto_at(False)
   |> options.output(to: options.stdout())
   |> palabres.configure
 }
