@@ -8,6 +8,11 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import mist
+import palabres
+import palabres/level
+import palabres/options
+import palabres_wisp
+import palabres_wisp/options as wisp_options
 import wisp
 import wisp/wisp_mist
 
@@ -60,8 +65,9 @@ pub fn app_middleware(
   next: fn(wisp.Request) -> wisp.Response,
 ) -> wisp.Response {
   let req = wisp.method_override(req)
-  use <- wisp.log_request(req)
-  use <- wisp.rescue_crashes
+  // use <- wisp.log_request(req)
+  use <- palabres_wisp.log_request(req, wisp_options.defaults())
+  use <- palabres_wisp.rescue_crashes
   use req <- wisp.handle_head(req)
   use req <- wisp.csrf_known_header_protection(req)
   use <- wisp.serve_static(req, under: "/static", from: static_directory)
@@ -292,4 +298,15 @@ fn parsed_stop(maybe_stop: String, cb: fn(Stop) -> wisp.Response) {
     Error(_) -> wisp.bad_request("Expected stop, got: " <> maybe_stop)
     Ok(stop) -> cb(stop)
   }
+}
+
+pub fn configure_logger() {
+  options.defaults()
+  |> options.color(True)
+  |> options.json(False)
+  // The minimum log level. Defaults to `level.Info`, which means `debug`
+  // logs are dropped unless you lower it, like here.
+  |> options.level(level.Debug)
+  |> options.output(to: options.stdout())
+  |> palabres.configure
 }
